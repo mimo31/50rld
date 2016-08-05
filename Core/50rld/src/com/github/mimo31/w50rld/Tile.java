@@ -1,5 +1,8 @@
 package com.github.mimo31.w50rld;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+
 /**
  * Represents one Tile on the map.
  * 
@@ -43,5 +46,31 @@ public class Tile {
 		this.gold = gold;
 		this.surface = surface;
 		this.depth = depth;
+	}
+	
+	/**
+	 * Paints the Tile through the specified Graphics2D on a location at (x, y) with a specified width.
+	 * @param g graphics to paint
+	 * @param x x coordinate of the location to paint at
+	 * @param y y coordinate of the location to paint at
+	 * @param width width of the Tile to paint
+	 */
+	public void paint(Graphics2D g, int x, int y, int width, int height)
+	{
+		Color color = null;
+		switch (this.surface)
+		{
+			case WATER:
+				color = Color.blue;
+				break;
+			case DIRT:
+				color = Color.green;
+				break;
+			case SAND:
+				color = Color.yellow;
+				break;
+		}
+		g.setColor(color);
+		g.fillRect(x, y, width, height);
 	}
 }

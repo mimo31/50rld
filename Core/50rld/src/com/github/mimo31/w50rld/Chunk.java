@@ -21,11 +21,11 @@ public class Chunk {
 	public final int y;
 	
 	// array of randomly permuted values from 0 to 255 to generate hashed ore amounts
-	private static byte[] hashArray = new byte[256];
+	private static int[] hashArray = new int[256];
 	
 	// Tiles in this Chunk, one dimensional array of 4096 elements, tiles are stored in this order:
 	// (x = 0, y = 0), (x = 1, y = 0), ... (x = 0, y = 1), (x = 1, y = 1)
-	Tile[] tiles;
+	private Tile[] tiles;
 	
 	/**
 	 * Creates a new Chunk and generates its Tiles based on its location.
@@ -36,6 +36,7 @@ public class Chunk {
 	{
 		this.x = x;
 		this.y = y;
+		this.tiles = new Tile[4096];
 		
 		// collect the coordinates of every tile in this chunk
 		int[] allXCoors = new int[4096];
@@ -94,7 +95,7 @@ public class Chunk {
 					if (currentBiomeNoise > strongestBiomeNoise)
 					{
 						strongestBiomeNoise = currentBiomeNoise;
-						strongestBiomeNoiseNumber = i;
+						strongestBiomeNoiseNumber = k;
 					}
 				}
 				
@@ -108,8 +109,10 @@ public class Chunk {
 					case 1:
 					case 2:
 						surfaceType = SurfaceType.DIRT;
+						break;
 					case 3:
 						surfaceType = SurfaceType.SAND;
+						break;
 				}
 				
 				// assign the Tile
@@ -144,19 +147,19 @@ public class Chunk {
 		// populate the array
 		for (int i = 0; i < 4; i++)
 		{
-			inputBytes[i] = (x >> (8 * i)) | 255;
+			inputBytes[i] = (x >> (8 * i)) & 255;
 		}
 		for (int i = 0; i < 4; i++)
 		{
-			inputBytes[4 + i] = (y >> (8 * i)) | 255;
+			inputBytes[4 + i] = (y >> (8 * i)) & 255;
 		}
-		inputBytes[8] = oreNumber | 255;
+		inputBytes[8] = oreNumber & 255;
 		
 		// get the hash from the array
 		int currentHash = hashArray[inputBytes[0]];
 		for (int i = 1; i < 9; i++)
 		{
-			currentHash = hashArray[(currentHash + inputBytes[i]) | 255];
+			currentHash = hashArray[(currentHash + inputBytes[i]) & 255];
 		}
 		
 		return (byte) currentHash;
@@ -180,7 +183,7 @@ public class Chunk {
 		// convert the list to the array
 		for (int i = 0; i < 256; i++)
 		{
-			hashArray[i] = list.get(i).byteValue();
+			hashArray[i] = list.get(i).intValue();
 		}
 	}
 }

@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
@@ -22,8 +23,11 @@ public class Main {
 	public static int playerX;
 	public static int playerY;
 	
-	// map seed
+	// game seed
 	public static final long SEED = (long) (Math.random() * Long.MAX_VALUE);
+	
+	// the map
+	public static Map map = new Map();
 	
 	public static void main(String[] args)
 	{
@@ -38,22 +42,26 @@ public class Main {
 		}
 		
 		// create the window and override the paint with our paint paint method
-		JFrame frame = new JFrame("50rld")
-		{
+		JFrame frame = new JFrame("50rld");
+		
+		// create a component to paint
+		JComponent component = new JComponent(){
 			
 			/**
 			 * 
 			 */
-			private static final long serialVersionUID = -3536460100188805348L;
+			private static final long serialVersionUID = 371375858304466268L;
 
 			@Override
 			public void paint(Graphics graphics)
 			{
-				Container contentPane = this.getContentPane();
-				Main.paint((Graphics2D) graphics, contentPane.getWidth(), contentPane.getHeight());
+				Main.paint((Graphics2D) graphics, this.getWidth(), this.getHeight());
 			}
 			
 		};
+		
+		// add the component to the frame
+		frame.add(component);
 		
 		// configure the window
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -88,7 +96,40 @@ public class Main {
 	 */
 	public static void paint(Graphics2D g, int width, int height)
 	{
+		// the size of a Tile on the screen
+		float tileSize = (width / 256f);
 		
+		// coordinates of the rectangle of the Map that can be seen on the screen
+		float mapViewWidth = width * 7 / 8f / tileSize;
+		float mapViewHeight = height / tileSize;
+		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2;
+		float mapViewCornerY = playerY - (mapViewHeight - 1) / 2;
+		
+		// convert the coordinates to ints
+		int mapX = (int)Math.floor(mapViewCornerX);
+		int mapY = (int)Math.floor(mapViewCornerY);
+		int mapWidth = (int)Math.ceil(mapViewWidth);
+		int mapHeight = (int)Math.ceil(mapViewHeight);
+		
+		// get the Tiles in the rectangle
+		Tile[] tiles = map.getTiles(mapX, mapY, mapWidth, mapHeight);
+		
+		// iterate through all the tiles of the rectangle and paint them
+		for (int i = mapY; i < mapY + mapHeight; i++)
+		{
+			for (int j = mapX; j < mapX + mapWidth; j++)
+			{
+				Tile currentTile = tiles[(i - mapY) * mapWidth + (j - mapX)];
+				
+				// calculate the location where the Tile will be painted
+				int paintX = (int)((j - mapViewCornerX) * tileSize);
+				int paintY = (int)((i - mapViewCornerY) * tileSize);
+				int nextPaintX = (int)((j + 1 - mapViewCornerX) * tileSize);
+				int nextPaintY = (int)((i + 1 - mapViewCornerY) * tileSize);
+				
+				currentTile.paint(g, paintX, paintY, nextPaintX - paintX, nextPaintY - paintY);
+			}
+		}
 	}
 	
 	/**
@@ -99,7 +140,14 @@ public class Main {
 	 */
 	public static void update(int width, int height, int delta)
 	{
+		// calculate the coordinates of the rectangle of the Map that can be seen on the screen
+		float mapViewWidth = width * 7 / 8f / (width / 256f);
+		float mapViewHeight = height / (width / 256f);
+		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2;
+		float mapViewCornerY = playerY - (mapViewHeight - 1) / 2;
 		
+		// prepare the Map Tiles in this rectangle
+		map.prepareTiles((int)Math.floor(mapViewCornerX), (int)Math.floor(mapViewCornerY), (int)Math.ceil(mapViewWidth), (int)Math.ceil(mapViewHeight));
 	}
 	
 	/**
@@ -117,8 +165,8 @@ public class Main {
 		{
 			
 		}
-		Noise.biomeNoises = new Noise[]{ new Noise(SEED + 1, Constants.BIOME_SCALE), new Noise(SEED + 2, Constants.BIOME_SCALE),
-				new Noise(SEED + 3, Constants.BIOME_SCALE), new Noise(SEED + 4, Constants.BIOME_SCALE) };
+		Noise.biomeNoises = new Noise[]{ new Noise(SEED + 1, Constants.BIOME_SCALE), new Noise(SEED + 2, Constants.BIOME_SCALE, 1 / 4d),
+				new Noise(SEED + 3, Constants.BIOME_SCALE, 1 / 2d), new Noise(SEED + 4, Constants.BIOME_SCALE, 3 / 4d) };
 		Noise.oreNoises = new Noise[] { new Noise(SEED + 5, Constants.ORE_SCALE), new Noise(SEED + 6, Constants.ORE_SCALE),
 				new Noise(SEED + 7, Constants.ORE_SCALE) };
 		Chunk.initializeHashArray();

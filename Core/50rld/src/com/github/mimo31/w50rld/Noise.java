@@ -12,11 +12,14 @@ import java.util.Random;
  */
 public class Noise {
 
-	// an array of 256 bytes to generate gradient vectors when generating noise, every value appears exactly once
-	final byte[] hashArray = new byte[256];
+	// an array of 256 integers from 0 to 256 to generate gradient vectors when generating noise, every value appears exactly once
+	final int[] hashArray = new int[256];
 	
 	// the scale of the noise, the bigger the scale, the bigger the structures of the noise
 	final int scale;
+	
+	// a value to add to every coordinates to shift relative to other noises
+	final double shift;
 	
 	// noises for the four biomes: water, tree, grass, and sand respectively 
 	public static Noise[] biomeNoises;
@@ -27,8 +30,10 @@ public class Noise {
 	/**
 	 * Creates a noise object with its hashArray based on the seed.
 	 * @param seed
+	 * @param scale the size of the noise structures
+	 * @param shift a number that will be added to the request coordinates to shift the noise relative to other noises
 	 */
-	public Noise(long seed, int scale)
+	public Noise(long seed, int scale, double shift)
 	{
 		Random r = new Random(seed);
 		
@@ -42,10 +47,16 @@ public class Noise {
 		// convert the list to the hashArray
 		for (int i = 0; i < 256; i++)
 		{
-			hashArray[i] = list.get(i).byteValue();
+			hashArray[i] = list.get(i).intValue();
 		}
 		
 		this.scale = scale;
+		this.shift = shift;
+	}
+	
+	public Noise(long seed, int scale)
+	{
+		this(seed, scale, 0);
 	}
 	
 	/**
@@ -61,8 +72,8 @@ public class Noise {
 		for (int i = 0; i < xs.length; i++)
 		{
 			// location of the GredientVector corresponding to the current point in the top left corner
-			int gradX = (int)Math.floor(xs[i] / (double)this.scale);
-			int gradY = (int)Math.floor(ys[i] / (double)this.scale);
+			int gradX = (int)Math.floor(xs[i] / (double)this.scale + this.shift);
+			int gradY = (int)Math.floor(ys[i] / (double)this.scale + this.shift);
 			
 			requiredVectors.add(new Point(gradX, gradY));
 			requiredVectors.add(new Point(gradX + 1, gradY));
@@ -99,8 +110,8 @@ public class Noise {
 		for (int i = 0; i < xs.length; i++)
 		{
 			// location of the GredientVector corresponding to the current point in the top left corner
-			int gradX = (int)Math.floor(xs[i] / (double)this.scale);
-			int gradY = (int)Math.floor(ys[i] / (double)this.scale);
+			int gradX = (int)Math.floor(xs[i] / (double)this.scale + this.shift);
+			int gradY = (int)Math.floor(ys[i] / (double)this.scale + this.shift);
 			
 			// get the required GradientVectors from the list
 			GradientVector grad0 = searchGradientVectors(new Point(gradX, gradY), gradientVectors);
@@ -109,8 +120,8 @@ public class Noise {
 			GradientVector grad3 = searchGradientVectors(new Point(gradX + 1, gradY + 1), gradientVectors);
 			
 			// calculate the distances from the top-left gradient
-			double xDist = xs[i] / (double)this.scale - gradX;
-			double yDist = ys[i] / (double)this.scale - gradY;
+			double xDist = xs[i] / (double)this.scale + this.shift - gradX;
+			double yDist = ys[i] / (double)this.scale + this.shift - gradY;
 			
 			// calculate the dot products
 			double dot0 = xDist * grad0.dirX + yDist * grad0.dirY;
@@ -171,14 +182,14 @@ public class Noise {
 		
 		// output of the hash algorithm
 		long out = 0;
-		out = (byte) this.hash(this.hash(this.hash(i2) + i1) + i0) | out;
-		out = (byte) this.hash(this.hash(this.hash(i2 + 1)	+ i1) + i0) << 8 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2) + i1 + 1) + i0) << 16 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2 + 1) + i1 + 1) + i0) << 24 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2) + i1) + i0 + 1) << 32 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2 + 1)	+ i1) + i0 + 1) << 40 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2) + i1 + 1) + i0 + 1) << 48 | out;
-		out = (byte) this.hash(this.hash(this.hash(i2 + 1) + i1 + 1) + i0 + 1) << 56 | out;
+		out |= ((long) this.hash(this.hash(this.hash(i2) + i1) + i0));
+		out |= ((long) this.hash(this.hash(this.hash(i2 + 1) + i1) + i0)) << 8;
+		out |= ((long) this.hash(this.hash(this.hash(i2) + i1 + 1) + i0)) << 16;
+		out |= ((long) this.hash(this.hash(this.hash(i2 + 1) + i1 + 1) + i0)) << 24;
+		out |= ((long) this.hash(this.hash(this.hash(i2) + i1) + i0 + 1)) << 32;
+		out |= ((long) this.hash(this.hash(this.hash(i2 + 1) + i1) + i0 + 1)) << 40;
+		out |= ((long) this.hash(this.hash(this.hash(i2) + i1 + 1) + i0 + 1)) << 48;
+		out |= ((long) this.hash(this.hash(this.hash(i2 + 1) + i1 + 1) + i0 + 1)) << 56;
 		
 		// create an angle for the gradient vector from the hashed bytes 
 		double angle = out / (double)Long.MAX_VALUE * 2 * Math.PI;
