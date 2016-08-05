@@ -38,35 +38,18 @@ public class Chunk {
 		this.y = y;
 		this.tiles = new Tile[4096];
 		
-		// collect the coordinates of every tile in this chunk
-		int[] allXCoors = new int[4096];
-		int[] allYCoors = new int[4096];
-		for (int i = 0; i < 64; i++)
-		{
-			for (int j = 0; j < 64; j++)
-			{
-				// coordinates of this Tile on the entire map
-				int xMapLocation = x * 64 + j;
-				int yMapLocation = y * 64 + i;
-				
-				// add the coordinates to the arrays
-				allXCoors[i * 64 + j] = xMapLocation;
-				allYCoors[i * 64 + j] = yMapLocation;
-			}
-		}
-		
 		// get biome noises for all biomes on all those coordinates
 		double[][] biomeNoises = new double[4096][4];
 		for (int i = 0; i < 4; i++)
 		{
-			biomeNoises[i] = Noise.biomeNoises[i].getNoise(allXCoors, allYCoors);
+			biomeNoises[i] = Noise.biomeNoises[i].getNoiseRectangle(x * 64, y * 64, 64, 64);
 		}
 		
 		// get ore noise for all ores on all those coordinates
 		double[][] oreNoises = new double[4096][3];
 		for (int i = 0; i < 3; i++)
 		{
-			oreNoises[i] = Noise.oreNoises[i].getNoise(allXCoors, allYCoors);
+			oreNoises[i] = Noise.oreNoises[i].getNoiseRectangle(x * 64, y * 64, 64, 64);
 		}
 		
 		for (int i = 0; i < 64; i++)

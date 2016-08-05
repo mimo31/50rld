@@ -76,12 +76,12 @@ public class Map {
 		
 		// Chunk coordinates of the rightmost and the bottom-most Chunks
 		int maxChunkX = (int)Math.floor((x + width - 1) / 64f);
-		int maxChunkY = (int)Math.floor((y + width - 1) / 64f);
+		int maxChunkY = (int)Math.floor((y + height - 1) / 64f);
 		
 		// iterate through all the required Chunks
 		for (int i = minChunkY; i <= maxChunkY; i++)
 		{
-			for (int j = minChunkX; j < maxChunkX; j++)
+			for (int j = minChunkX; j <= maxChunkX; j++)
 			{
 				// search for the required Chunk
 				boolean found = false;
@@ -148,6 +148,7 @@ public class Map {
 				if (chunk == null)
 				{
 					chunk = new Chunk(j, i);
+					this.chunks.add(chunk);
 				}
 				
 				// iterate through the Tiles of the Chunk either form the origin of the Chunk or from the origin of our Map rectangle

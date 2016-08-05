@@ -60,27 +60,33 @@ public class Noise {
 	}
 	
 	/**
-	 * Calculates the noise value of this noise object at the specified locations. xs.length should equal ys.length
-	 * @param xs array of the x coordinates
-	 * @param ys array of the y coordinates
-	 * @return the values of the noise at (x, y) pairs
+	 * Returns an array of noise value at every point within the specified rectangle.
+	 * The noise value are stored left to right top to bottom.
+	 * @param x the x coordinate of the top-left corner of the rectangle
+	 * @param y the y coordinate of the top-left corner of the rectangle
+	 * @param width the width of the rectangle
+	 * @param height the height of the rectangle
+	 * @return an array of noise all the values within the rectangle
 	 */
-	public double[] getNoise(int[] xs, int[] ys)
+	public double[] getNoiseRectangle(int x, int y, int width, int height)
 	{
 		// create a list of required GradientVectors (the Points in the list represents the locations of the required vectors)
 		List<Point> requiredVectors = new ArrayList<Point>();
-		for (int i = 0; i < xs.length; i++)
+		
+		int firstX = (int)Math.floor(x / (double)this.scale + this.shift);
+		int firstY = (int)Math.floor(y / (double)this.scale + this.shift);
+		
+		int lastX = (int)Math.ceil((x + width - 1) / (double)this.scale + this.shift);
+		int lastY = (int)Math.ceil((y + height - 1) / (double)this.scale + this.shift);
+		
+		for (int i = firstY; i <= lastY; i++)
 		{
-			// location of the GredientVector corresponding to the current point in the top left corner
-			int gradX = (int)Math.floor(xs[i] / (double)this.scale + this.shift);
-			int gradY = (int)Math.floor(ys[i] / (double)this.scale + this.shift);
-			
-			requiredVectors.add(new Point(gradX, gradY));
-			requiredVectors.add(new Point(gradX + 1, gradY));
-			requiredVectors.add(new Point(gradX, gradY + 1));
-			requiredVectors.add(new Point(gradX + 1, gradY + 1));
+			for (int j = firstX; j <= lastX; j++)
+			{
+				requiredVectors.add(new Point(j, i));
+			}
 		}
-
+		
 		// prepare the required GradientVectors
 		List<GradientVector> gradientVectors = new ArrayList<GradientVector>();
 		for (int i = 0, n = requiredVectors.size(); i < n; i++)
@@ -91,7 +97,7 @@ public class Noise {
 			boolean found = false;
 			for (int j = 0; j < i; j++)
 			{
-				Point currentComparingVectorLocation = requiredVectors.get(j);;
+				Point currentComparingVectorLocation = requiredVectors.get(j);
 				if (currentVecLocation.x == currentComparingVectorLocation.x && currentVecLocation.y == currentComparingVectorLocation.y)
 				{
 					found = true;
@@ -106,44 +112,47 @@ public class Noise {
 		}
 		
 		// calculate the noise values
-		double[] noises = new double[xs.length];
-		for (int i = 0; i < xs.length; i++)
+		double[] noises = new double[width * height];
+		for (int i = y; i < y + height; i++)
 		{
-			// location of the GredientVector corresponding to the current point in the top left corner
-			int gradX = (int)Math.floor(xs[i] / (double)this.scale + this.shift);
-			int gradY = (int)Math.floor(ys[i] / (double)this.scale + this.shift);
-			
-			// get the required GradientVectors from the list
-			GradientVector grad0 = searchGradientVectors(new Point(gradX, gradY), gradientVectors);
-			GradientVector grad1 = searchGradientVectors(new Point(gradX + 1, gradY), gradientVectors);
-			GradientVector grad2 = searchGradientVectors(new Point(gradX, gradY + 1), gradientVectors);
-			GradientVector grad3 = searchGradientVectors(new Point(gradX + 1, gradY + 1), gradientVectors);
-			
-			// calculate the distances from the top-left gradient
-			double xDist = xs[i] / (double)this.scale + this.shift - gradX;
-			double yDist = ys[i] / (double)this.scale + this.shift - gradY;
-			
-			// calculate the dot products
-			double dot0 = xDist * grad0.dirX + yDist * grad0.dirY;
-			double dot1 = (xDist - 1) * grad1.dirX + yDist * grad1.dirY;
-			double dot2 = xDist * grad2.dirX + (yDist - 1) * grad2.dirY;
-			double dot3 = (xDist - 1) * grad3.dirX + (yDist - 1) * grad3.dirY;
-			
-			// calculate the transformed distances
-			double xTDist = 3 * Math.pow(xDist, 2) - 2 * Math.pow(xDist, 3);
-			double yTDist = 3 * Math.pow(yDist, 2) - 2 * Math.pow(yDist, 3);
-			
-			// calculate the averages on the x axes
-			double average02 = (1 - yTDist) * dot0 + yTDist * dot2;
-			double average13 = (1 - yTDist) * dot1 + yTDist * dot3;
-			
-			// calculate the average on the y axis
-			double average = (1 - xTDist) * average02 + xTDist * average13;
-			
-			// and that's, finally, after just a little bit of scaling and translation, our noise value
-			noises[i] = average / 2 + 0.5;
+			for (int j = x; j < x + width; j++)
+			{
+				// location of the GredientVector corresponding to the current point in the top left corner
+				int gradX = (int)Math.floor(j / (double)this.scale + this.shift);
+				int gradY = (int)Math.floor(i / (double)this.scale + this.shift);
+				
+				// get the required GradientVectors from the list
+				GradientVector grad0 = searchGradientVectors(new Point(gradX, gradY), gradientVectors);
+				GradientVector grad1 = searchGradientVectors(new Point(gradX + 1, gradY), gradientVectors);
+				GradientVector grad2 = searchGradientVectors(new Point(gradX, gradY + 1), gradientVectors);
+				GradientVector grad3 = searchGradientVectors(new Point(gradX + 1, gradY + 1), gradientVectors);
+				
+				// calculate the distances from the top-left gradient
+				double xDist = j / (double)this.scale + this.shift - gradX;
+				double yDist = i / (double)this.scale + this.shift - gradY;
+				
+				// calculate the dot products
+				double dot0 = xDist * grad0.dirX + yDist * grad0.dirY;
+				double dot1 = (xDist - 1) * grad1.dirX + yDist * grad1.dirY;
+				double dot2 = xDist * grad2.dirX + (yDist - 1) * grad2.dirY;
+				double dot3 = (xDist - 1) * grad3.dirX + (yDist - 1) * grad3.dirY;
+				
+				// calculate the transformed distances
+				double xTDist = 3 * Math.pow(xDist, 2) - 2 * Math.pow(xDist, 3);
+				double yTDist = 3 * Math.pow(yDist, 2) - 2 * Math.pow(yDist, 3);
+				
+				// calculate the averages on the x axes
+				double average02 = (1 - yTDist) * dot0 + yTDist * dot2;
+				double average13 = (1 - yTDist) * dot1 + yTDist * dot3;
+				
+				// calculate the average on the y axis
+				double average = (1 - xTDist) * average02 + xTDist * average13;
+				
+				// and that's, finally, after just a little bit of scaling and translation, our noise value
+				noises[(i - y) * width + (j - x)] = average / 2 + 0.5;
+			}
 		}
-		
+			
 		return noises;
 	}
 	
@@ -208,7 +217,7 @@ public class Noise {
 	 */
 	private int hash(int value)
 	{
-		return this.hashArray[value % 256];
+		return this.hashArray[value & 255];
 	}
 	
 	/**

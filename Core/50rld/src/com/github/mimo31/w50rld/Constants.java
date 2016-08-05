@@ -18,4 +18,7 @@ public class Constants {
 	public static final double IRON_ORE_LIMIT = 0.6;
 	public static final double GOLD_ORE_LIMIT = 0.7;
 	
+	// maximal possible zoom
+	public static final int MAX_ZOOM = 4;
+	
 }

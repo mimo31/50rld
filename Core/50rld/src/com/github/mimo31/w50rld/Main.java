@@ -26,6 +26,9 @@ public class Main {
 	// game seed
 	public static final long SEED = (long) (Math.random() * Long.MAX_VALUE);
 	
+	// the zoom of the map (size of one Tile is width * 2 ^ (8 - zoom))
+	public static int zoom = 0;
+	
 	// the map
 	public static Map map = new Map();
 	
@@ -97,7 +100,7 @@ public class Main {
 	public static void paint(Graphics2D g, int width, int height)
 	{
 		// the size of a Tile on the screen
-		float tileSize = (width / 256f);
+		float tileSize = (float) (width * Math.pow(2, zoom - 8));
 		
 		// coordinates of the rectangle of the Map that can be seen on the screen
 		float mapViewWidth = width * 7 / 8f / tileSize;
@@ -110,14 +113,14 @@ public class Main {
 		int mapY = (int)Math.floor(mapViewCornerY);
 		int mapWidth = (int)Math.ceil(mapViewWidth);
 		int mapHeight = (int)Math.ceil(mapViewHeight);
-		
+
 		// get the Tiles in the rectangle
-		Tile[] tiles = map.getTiles(mapX, mapY, mapWidth, mapHeight);
+		Tile[] tiles = map.getTiles(mapX, mapY, mapWidth + 1, mapHeight + 1);
 		
 		// iterate through all the tiles of the rectangle and paint them
-		for (int i = mapY; i < mapY + mapHeight; i++)
+		for (int i = mapY; i <= mapY + mapHeight; i++)
 		{
-			for (int j = mapX; j < mapX + mapWidth; j++)
+			for (int j = mapX; j <= mapX + mapWidth; j++)
 			{
 				Tile currentTile = tiles[(i - mapY) * mapWidth + (j - mapX)];
 				
@@ -140,9 +143,12 @@ public class Main {
 	 */
 	public static void update(int width, int height, int delta)
 	{
+		// the size of a Tile on the screen
+		float tileSize = (float) (width * Math.pow(2, zoom - 8));
+		
 		// calculate the coordinates of the rectangle of the Map that can be seen on the screen
-		float mapViewWidth = width * 7 / 8f / (width / 256f);
-		float mapViewHeight = height / (width / 256f);
+		float mapViewWidth = width * 7 / 8f / tileSize;
+		float mapViewHeight = height / tileSize;
 		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2;
 		float mapViewCornerY = playerY - (mapViewHeight - 1) / 2;
 		
