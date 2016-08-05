@@ -122,7 +122,7 @@ public class Main {
 		{
 			for (int j = mapX; j <= mapX + mapWidth; j++)
 			{
-				Tile currentTile = tiles[(i - mapY) * mapWidth + (j - mapX)];
+				Tile currentTile = tiles[(i - mapY) * (mapWidth + 1) + (j - mapX)];
 				
 				// calculate the location where the Tile will be painted
 				int paintX = (int)((j - mapViewCornerX) * tileSize);
