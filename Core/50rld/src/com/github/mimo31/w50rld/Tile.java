@@ -2,6 +2,7 @@ package com.github.mimo31.w50rld;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.List;
 
 /**
  * Represents one Tile on the map.
@@ -17,19 +18,25 @@ public class Tile {
 	}
 	
 	// amount of iron
-	byte iron;
+	private byte iron;
 	
 	// amount of coal
-	byte coal;
+	private byte coal;
 	
 	// amount of gold
-	byte gold;
+	private byte gold;
 	
 	// type of surface
-	SurfaceType surface;
+	private SurfaceType surface;
 	
 	// depth of the hole, if any
-	byte depth;
+	private byte depth;
+	
+	// laying items, if any
+	private List<ItemStack> items = null;
+	
+	// structures on the Tile, the first item in this list is the Structure farthest from the surface
+	private List<Structure> structures = null;
 	
 	/**
 	 * Creates a new Tile object with the specified fields.
@@ -49,7 +56,7 @@ public class Tile {
 	}
 	
 	/**
-	 * Paints the Tile through the specified Graphics2D on a location at (x, y) with a specified width.
+	 * Paints the Tile through the specified Graphics2D on a location at (x, y) with a specified width and height.
 	 * @param g graphics to paint
 	 * @param x x coordinate of the location to paint at
 	 * @param y y coordinate of the location to paint at
@@ -57,20 +64,57 @@ public class Tile {
 	 */
 	public void paint(Graphics2D g, int x, int y, int width, int height)
 	{
-		Color color = null;
-		switch (this.surface)
+		// find out the index of the first Structure to draw at the Tile
+		// (because it is the last overdraw Structure, so it would overdraw the prior anyway
+		int firstStructureIndexToDraw = -1;
+		if (this.structures != null)
 		{
-			case WATER:
-				color = Color.blue;
-				break;
-			case DIRT:
-				color = Color.green;
-				break;
-			case SAND:
-				color = Color.yellow;
-				break;
+			for (int i = this.structures.size() - 1; i >= 0; i++)
+			{
+				if (this.structures.get(i).overdraws)
+				{
+					firstStructureIndexToDraw = i;
+					break;
+				}
+			}
 		}
-		g.setColor(color);
-		g.fillRect(x, y, width, height);
+		
+		if (firstStructureIndexToDraw == -1)
+		{
+			// no Structure is declared overdraw, so draw the underlying ground
+			Color color = null;
+			switch (this.surface)
+			{
+				case WATER:
+					color = Color.blue;
+					break;
+				case DIRT:
+					color = new Color(166, 104, 42);
+					break;
+				case SAND:
+					color = Color.yellow;
+					break;
+			}
+			g.setColor(color);
+			g.fillRect(x, y, width, height);
+		}
+		
+		// draw all the Structures that need to be drawn
+		if (this.structures != null)
+		{
+			for (int i = (firstStructureIndexToDraw == -1) ? 0 : firstStructureIndexToDraw, n = this.structures.size(); i < n; i++)
+			{
+				this.structures.get(i).draw(g, x, y, width, height);
+			}
+		}
+	}
+	
+	/**
+	 * Sets the Tile's structures property.
+	 * @param structures Structure list to set
+	 */
+	public void setStructures(List<Structure> structures)
+	{
+		this.structures = structures;
 	}
 }

@@ -2,6 +2,7 @@ package com.github.mimo31.w50rld;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -9,14 +10,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
+/**
+ * Controls the main flow of the program.
+ * @author mimo31
+ *
+ */
 public class Main {
 
 	// the root directory for saved data and resources
@@ -42,6 +45,12 @@ public class Main {
 	private static long downAt = 0;
 	// time when the last move was done
 	private static long lastMove = 0;
+	
+	// current number of health points
+	private static int health = 16;
+	
+	// player's inventory
+	private static ItemStack[] inventory = new ItemStack[8];
 	
 	public static void main(String[] args)
 	{
@@ -114,6 +123,9 @@ public class Main {
 			}
 		});
 		
+		// set minimal window size
+		frame.setMinimumSize(new Dimension(400, 400));
+		
 		// start the update timer
 		updateTimer.start();
 		
@@ -173,8 +185,43 @@ public class Main {
 			}
 		}
 		
-		// draw the player
+		// draw the health bar
 		
+		// x coordinate of the left end of the health bar
+		int healthXStart = width * 7 / 8;
+		
+		// x coordinate of the right end of the health bar
+		int healthXEnd = width * 15 / 16;
+		
+		// draw the health background
+		g.setColor(new Color(153, 0, 0));
+		g.fillRect(healthXStart, 0, healthXEnd - healthXStart, height);
+		
+		// y coordinate of the bottom end of the heart
+		int heartYEnd = healthXEnd - healthXStart;
+		
+		// draw the heart
+		g.drawImage(ResourceHandler.getImage("Heart.png", heartYEnd), healthXStart, 0, null);
+		
+		// draw the amount of health points
+		g.setColor(Color.red);
+		int healthBarHeight = (height - heartYEnd) * health / Constants.MAX_HEALTH;
+		g.fillRect(healthXStart, height - healthBarHeight, heartYEnd, healthBarHeight);
+		
+		// draw the bar to break the amount of health points
+		g.setColor(Color.black);
+		for (int i = 1; i < Constants.MAX_HEALTH; i++)
+		{
+			g.fillRect(healthXStart, heartYEnd + (height - heartYEnd) * i / Constants.MAX_HEALTH - height / 512, heartYEnd, height / 256);
+		}
+		
+		// draw the inventory
+		for (int i = 0; i < 8; i++)
+		{
+			int paintY = height * i / 8;
+			int nextPaintY = height * (i + 1) / 8;
+			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY);
+		}
 	}
 	
 	/**
@@ -286,19 +333,22 @@ public class Main {
 	 */
 	public static void initialize() throws IOException
 	{
-		Path rootPath = Paths.get(rootDirectory);
-		if (Files.exists(rootPath))
-		{
-			Files.createDirectory(rootPath);
-		}
-		else
-		{
-			
-		}
+		// initialize the noises for generating terrain
 		Noise.biomeNoises = new Noise[]{ new Noise(SEED + 1, Constants.BIOME_SCALE), new Noise(SEED + 2, Constants.BIOME_SCALE, 1 / 4d),
 				new Noise(SEED + 3, Constants.BIOME_SCALE, 1 / 2d), new Noise(SEED + 4, Constants.BIOME_SCALE, 3 / 4d) };
 		Noise.oreNoises = new Noise[] { new Noise(SEED + 5, Constants.ORE_SCALE), new Noise(SEED + 6, Constants.ORE_SCALE),
 				new Noise(SEED + 7, Constants.ORE_SCALE) };
+		
+		// initialize the hash array for generating small structures
 		Chunk.initializeHashArray();
+		
+		// initialize player's inventory
+		for (int i = 0; i < 8; i++)
+		{
+			inventory[i] = new ItemStack();
+		}
+		
+		// initialize indexes
+		ObjectsIndex.loadIndexes();
 	}
 }

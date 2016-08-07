@@ -27,4 +27,9 @@ public class Constants {
 	// minimal number of milliseconds that passes between the movement when the player is continuously moving
 	public static final int MOVE_INTERVAL = 25;
 	
+	// maximal number of health points
+	public static final int MAX_HEALTH = 16;
+	
+	// probability of a Bush appearing in a grass biome
+	public static final float BUSH_IN_GRASS_PROB = 0.0078125f;
 }

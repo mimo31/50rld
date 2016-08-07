@@ -213,7 +213,7 @@ public class ResourceHandler<T> {
 		{
 			// texture does not exist - load the image and add the new texture
 			try {
-				texture = new Texture(ImageIO.read(new File("\\Resources\\Images\\" + name)));
+				texture = new Texture(ImageIO.read(new File(Main.rootDirectory + "\\Resources\\Images\\" + name)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
