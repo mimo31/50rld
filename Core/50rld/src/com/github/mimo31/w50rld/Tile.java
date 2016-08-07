@@ -2,6 +2,7 @@ package com.github.mimo31.w50rld;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -116,5 +117,44 @@ public class Tile {
 	public void setStructures(List<Structure> structures)
 	{
 		this.structures = structures;
+	}
+	
+	/**
+	 * Removes the Tile's top Structure.
+	 */
+	public void popStructure()
+	{
+		int numberOfStructures;
+		if (this.structures != null && (numberOfStructures = this.structures.size()) != 0)
+		{
+			this.structures.remove(numberOfStructures - 1);
+		}
+	}
+	
+	/**
+	 * Adds a Structure to the top.
+	 * @param structure structure to add
+	 */
+	public void pushStructure(Structure structure)
+	{
+		if (this.structures == null)
+		{
+			this.structures = new ArrayList<Structure>();
+		}
+		this.structures.add(structure);
+	}
+	
+	/**
+	 * Return the Structure at the top. Return null if no Structures are present.
+	 * @return Tile's top Structure or null if no Structures are present
+	 */
+	public Structure getTopStructure()
+	{
+		int numberOfStructures;
+		if (this.structures != null && (numberOfStructures = this.structures.size()) != 0)
+		{
+			return this.structures.get(numberOfStructures - 1);
+		}
+		return null;
 	}
 }

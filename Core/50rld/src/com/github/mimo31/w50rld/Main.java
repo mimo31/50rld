@@ -1,19 +1,15 @@
 package com.github.mimo31.w50rld;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.Timer;
+import com.github.mimo31.w50rld.Structure.StructureAction;
 
 /**
  * Controls the main flow of the program.
@@ -52,6 +48,10 @@ public class Main {
 	// player's inventory
 	private static ItemStack[] inventory = new ItemStack[8];
 	
+	// opened OptionBoxes
+	private static List<OptionBox> boxes = new ArrayList<OptionBox>();
+	
+	
 	public static void main(String[] args)
 	{
 		// initialize everything
@@ -63,74 +63,6 @@ public class Main {
 		{
 			e.printStackTrace();
 		}
-		
-		// create the window and override the paint with our paint paint method
-		JFrame frame = new JFrame("50rld");
-		
-		// create a component to paint
-		JComponent component = new JComponent(){
-			
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 371375858304466268L;
-
-			@Override
-			public void paint(Graphics graphics)
-			{
-				Main.paint((Graphics2D) graphics, this.getWidth(), this.getHeight());
-			}
-			
-		};
-		
-		// add the component to the frame
-		frame.add(component);
-		
-		// configure the window
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		
-		// create a timer that calls our update method and repaints when triggered
-		Timer updateTimer = new Timer(16, new ActionListener()
-		{
-			
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				Container contentPane = frame.getContentPane();
-				update(contentPane.getWidth(), contentPane.getHeight(), 16);
-				frame.repaint();
-			}
-			
-		});
-		
-		// add key listener
-		frame.addKeyListener(new KeyListener() {
-			
-			@Override
-			public void keyTyped(KeyEvent e) {
-				
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {
-				Main.keyReleased(e);
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				Main.keyPressed(e);
-			}
-		});
-		
-		// set minimal window size
-		frame.setMinimumSize(new Dimension(400, 400));
-		
-		// start the update timer
-		updateTimer.start();
-		
-		// make the window visible
-		frame.setVisible(true);
 	}
 	
 	/**
@@ -222,6 +154,12 @@ public class Main {
 			int nextPaintY = height * (i + 1) / 8;
 			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY);
 		}
+		
+		// draw the boxes
+		for (int i = 0, n = boxes.size(); i < n; i++)
+		{
+			boxes.get(i).draw(g, width, height);
+		}
 	}
 	
 	/**
@@ -256,6 +194,65 @@ public class Main {
 			case KeyEvent.VK_RIGHT:
 				arrowDown = (code == arrowDown) ? 0 : arrowDown;
 				break;
+			
+			// display the action window
+			case KeyEvent.VK_A:
+				// get the top structure of the Tile on which the player is currently standing on
+				Tile currentTile = map.getTile(playerX, playerY);
+				Structure topStructure = currentTile.getTopStructure();
+				
+				// crate arrays for options and actions of the OptionBox
+				String[] options = new String[topStructure.actions.length];
+				Runnable[] actions = new Runnable[options.length];
+				
+				// populate those arrays
+				for (int i = 0; i < actions.length; i++)
+				{
+					StructureAction currentAction = topStructure.actions[i];
+					options[i] = currentAction.name;
+					actions[i] = () -> currentAction.action(playerX, playerY);
+				}
+				
+				// create an OptionBox in the middle of the map
+				boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
+				break;
+				
+			// close the action window
+			case KeyEvent.VK_ESCAPE:
+				int numberOfBoxes = boxes.size();
+				if (numberOfBoxes != 0)
+				{
+					boxes.remove(numberOfBoxes - 1);
+				}
+				break;
+				
+			// move the selection up in the active OptionBox
+			case KeyEvent.VK_W:
+				numberOfBoxes = boxes.size();
+				if (numberOfBoxes != 0)
+				{
+					boxes.get(numberOfBoxes - 1).selectionUp();
+				}
+				break;
+				
+			// move the selection down in the active OptionBox
+			case KeyEvent.VK_S:
+				numberOfBoxes = boxes.size();
+				if (numberOfBoxes != 0)
+				{
+					boxes.get(numberOfBoxes - 1).selectionDown();
+				}
+				break;
+				
+			// confirm the selection in the active OptionBox
+			case KeyEvent.VK_ENTER:
+				numberOfBoxes = boxes.size();
+				if (numberOfBoxes != 0)
+				{
+					boxes.get(numberOfBoxes - 1).selectionConfirm();
+					boxes.remove(numberOfBoxes - 1);
+				}
+				break;
 		}
 	}
 	
@@ -280,6 +277,14 @@ public class Main {
 	 */
 	private static void movePlayer()
 	{
+		// don't allow and stop any movement when an OptionBox is opened
+		if (!boxes.isEmpty())
+		{
+			arrowDown = 0;
+			return;
+		}
+		
+		// move the player according to the key that is pressed
 		switch (arrowDown)
 		{
 			case KeyEvent.VK_UP:
@@ -295,6 +300,36 @@ public class Main {
 				playerX++;
 				break;
 		}
+	}
+	
+	/**
+	 * Handles mouse clicks for the game.
+	 * @param event MouseEvent
+	 */
+	public static void mouseClicked(MouseEvent event)
+	{
+		// the number of OptionBoxes
+		int numberOfBoxes = boxes.size();
+		
+		// if there are some boxes, check whether the top one was clicked
+		if (numberOfBoxes != 0)
+		{
+			// Runnable that removes the top OptionBox
+			Runnable closeAction = () -> boxes.remove(numberOfBoxes - 1);
+			
+			// the top OptionBox
+			OptionBox box = boxes.get(numberOfBoxes - 1);
+			
+			// if the top box was not clicked, remove it
+			Dimension contentSize = Gui.getContentSize();
+			int width = contentSize.width;
+			int height = contentSize.height;
+			if (!box.mouseClicked(event, closeAction, width, height))
+			{
+				closeAction.run();
+			}
+		}
+		
 	}
 	
 	/**
@@ -350,5 +385,8 @@ public class Main {
 		
 		// initialize indexes
 		ObjectsIndex.loadIndexes();
+		
+		// initialize user interface
+		Gui.initializeGui();
 	}
 }

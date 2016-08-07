@@ -114,15 +114,15 @@ public class Chunk {
 						// decide which structure will be placed on this Tile
 						if (strData < grassP)
 						{
-							structures.add(ObjectsIndex.getStructure("grass"));
+							structures.add(ObjectsIndex.getStructure("Grass"));
 						}
 						else if (strData < bushP)
 						{
-							structures.add(ObjectsIndex.getStructure("bush"));
+							structures.add(ObjectsIndex.getStructure("Bush"));
 						}
 						else
 						{
-							structures.add(ObjectsIndex.getStructure("tree"));
+							structures.add(ObjectsIndex.getStructure("Tree"));
 						}
 						break;
 					case 2:
@@ -131,11 +131,11 @@ public class Chunk {
 						// decide whether to put a Grass or a Bush
 						if (getSmallStructureData(globalXCoor, globalYCoor, 3) + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
 						{
-							structures.add(ObjectsIndex.getStructure("bush"));
+							structures.add(ObjectsIndex.getStructure("Bush"));
 						}
 						else
 						{
-							structures.add(ObjectsIndex.getStructure("grass"));
+							structures.add(ObjectsIndex.getStructure("Grass"));
 						}
 						break;
 					case 3:

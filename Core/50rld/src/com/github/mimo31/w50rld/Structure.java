@@ -13,6 +13,9 @@ public abstract class Structure {
 	// indicates whether the structure takes up the whole Tile when drawn
 	public final boolean overdraws;
 	
+	// action that can be done on this structure by the player
+	public final StructureAction[] actions;
+	
 	/**
 	 * Draws the Structure.
 	 * @param g graphics to draw through
@@ -23,14 +26,34 @@ public abstract class Structure {
 	 */
 	public abstract void draw(Graphics2D g, int x, int y, int width, int height);
 
-	public Structure(String name, boolean overdraws)
+	public Structure(String name, boolean overdraws, StructureAction[] actions)
 	{
 		this.name = name;
 		this.overdraws = overdraws;
+		this.actions = actions;
 	}
 	
-	public Structure(String name)
+	public Structure(String name, StructureAction[] actions)
 	{
-		this(name, false);
+		this(name, false, actions);
+	}
+	
+	/**
+	 * Represents an action that can be done with a Structure by the player.
+	 * @author mimo31
+	 *
+	 */
+	public static abstract class StructureAction {	
+		
+		// name of the action that will be displayed to the player
+		final String name;
+		
+		public StructureAction(String name)
+		{
+			this.name = name;
+		}
+
+		// action to perform
+		public abstract void action(int tileX, int tileY);
 	}
 }
