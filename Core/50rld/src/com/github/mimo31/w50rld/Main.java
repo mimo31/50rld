@@ -8,6 +8,8 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.github.mimo31.w50rld.Structure.StructureAction;
 
@@ -168,6 +170,10 @@ public class Main {
 	 */
 	public static void keyReleased(KeyEvent e)
 	{
+		Dimension windowSize = Gui.getContentSize();
+		int width = windowSize.width;
+		int height = windowSize.height;
+		
 		int code = e.getKeyCode();
 		int numberOfBoxes = boxes.size();
 		
@@ -182,7 +188,7 @@ public class Main {
 			else
 			{
 				// pass the event to the Box
-				boxes.get(numberOfBoxes - 1).key(code, () -> boxes.remove(numberOfBoxes - 1));
+				boxes.get(numberOfBoxes - 1).key(e, () -> boxes.remove(numberOfBoxes - 1));
 			}
 			return;
 		}
@@ -237,7 +243,12 @@ public class Main {
 							// try adding the item in the inventory, if no items were added, show an InfoBox
 							if (!Main.tryAddInventoryItems(currentStack))
 							{
-								boxes.add(new InfoBox(7 / 16f, 1 / 2f, "No space in the inventory!"));
+								InfoBox box = new InfoBox(7 / 16f, 1 / 2f, "No space in the inventory!");
+								
+								// fit the box in the window
+								box.tryFitWindow(width, height);
+								
+								boxes.add(box);
 							}
 							// if all items were added to the inventory, remove the ItemStack from the Tile
 							else if (currentStack.getCount() == 0)
@@ -248,7 +259,13 @@ public class Main {
 					}
 					
 					// add the OptionBox
-					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, "Grab items"));
+					
+					OptionBox box = new OptionBox(options, actions, 7 / 16f, 1 / 2f, "Grab items");
+					
+					// fit the box in the window
+					box.tryFitWindow(width, height);
+					
+					boxes.add(box);
 				}
 				else
 				{
@@ -272,6 +289,68 @@ public class Main {
 				}
 				break;
 		}
+		
+		// check if the player wants to see the actions of an inventory slot
+		if ((code >= KeyEvent.VK_1 && code <= KeyEvent.VK_8) || (code >= KeyEvent.VK_NUMPAD1 && code <= KeyEvent.VK_NUMPAD8))
+		{
+			// inventory slot the player chose
+			int slot;
+			if (code >= KeyEvent.VK_1 && code <= KeyEvent.VK_8)
+			{
+				slot = code - KeyEvent.VK_1;
+			}
+			else
+			{
+				slot = code - KeyEvent.VK_NUMPAD1;
+			}
+			
+			// show the actions
+			showItemActions(slot, width, height);
+		}
+	}
+	
+	/**
+	 * Shows an OptionBox specific to actions of an Item in a specified inventory slot.
+	 * @param slot number of the slot
+	 * @param width width of the window
+	 * @param height height of the window
+	 */
+	private static void showItemActions(int slot, int width, int height)
+	{
+		// return if no is there
+		if (inventory[slot].getCount() == 0)
+		{
+			return;
+		}
+		
+		// options for the OptionBox
+		String[] options = new String[]{ "Drop" };
+		
+		// actions for the OptionBox
+		Runnable[] actions = new Runnable[]{ () -> {
+			// show an InputBox to ask the user for the amount of Items to drop
+			String request = "Enter the number of items to drop: ";
+			
+			// submit by calling the drop function
+			Consumer<String> submitFunction = (inputString) -> { drop(slot, inputString, width, height); };
+			
+			// allow only digits
+			Function<Integer, Boolean> charFilter = (chr) -> new Boolean(chr.intValue() >= '0' && chr.intValue() <= '9');
+			
+			InputBox box = new InputBox(31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,
+					request, submitFunction, charFilter);
+			box.tryFitWindow(width, height);
+			boxes.add(box);
+		} };
+		
+		// headline for the OptionBox
+		String itemName = inventory[slot].getItem().name;
+		
+		// show the OptionBox
+		OptionBox box = new OptionBox(options, actions, 31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,
+				itemName); 
+		box.tryFitWindow(width, height);
+		boxes.add(box);
 	}
 	
 	/**
@@ -405,6 +484,10 @@ public class Main {
 	 */
 	public static void mouseClicked(MouseEvent event)
 	{
+		Dimension windowSize = Gui.getContentSize();
+		int width = windowSize.width;
+		int height = windowSize.height;
+		
 		// the number of Boxes
 		int numberOfBoxes = boxes.size();
 		
@@ -417,19 +500,105 @@ public class Main {
 			// the top Box
 			Box box = boxes.get(numberOfBoxes - 1);
 			
-			Dimension contentSize = Gui.getContentSize();
-			int width = contentSize.width;
-			int height = contentSize.height;
-			
 			// if the top box was not clicked, remove it
 			if (!box.mouseClicked(event, closeAction, width, height))
 			{
 				closeAction.run();
 			}
 		}
-		
+		else
+		{
+			// if the player click on the inventory
+			if (event.getX() >= width * 15 / 16)
+			{
+				// number of the slot clicked
+				int slotClicked = event.getY() / (height / 8);
+
+				// show actions
+				showItemActions(slotClicked, width, height);
+			}
+		}
 	}
 	
+	/**
+	 * Drops a specified number of Items from a specified inventory slot on the current Tile.
+	 * Used primarily to accept player's drop submissions.
+	 * @param slotNumber number of the slot to drop from
+	 * @param numberOfItems text representation of the number of Items to drop
+	 * @param width width of the window
+	 * @param height height of the window
+	 */
+	private static void drop(int slotNumber, String numberOfItems, int width, int height)
+	{
+		// error to display to the user, remains null if no error occurs
+		String errorMessage = null;
+		
+		int inputLength = numberOfItems.length();
+		
+		// remove eventual zeroes
+		int i = 0;
+		while ((i + 1) < inputLength && numberOfItems.charAt(i) == '0')
+		{
+			i++;
+		}
+		if (i != 0)
+		{
+			numberOfItems = numberOfItems.substring(i, inputLength - 1);
+		}
+		
+		// subtract the number of zeroes removed
+		inputLength -= i;
+		
+		// the player entered nothing
+		if (inputLength == 0)
+		{
+			errorMessage = "You must enter a number.";
+		}
+		// the player entered more than two characters
+		else if (inputLength != 1 && inputLength != 2)
+		{
+			errorMessage = "There isn't that many items.";
+		}
+		else
+		{
+			// the number of item the players wants to drop
+			int itemsToDrop = Integer.parseInt(numberOfItems);
+			
+			// the stack on which we operate
+			ItemStack stack = inventory[slotNumber];
+			
+			// number of Items available to drop
+			int itemsPresent = stack.getCount();
+			
+			// not enough Items in the stack
+			if (itemsToDrop > itemsPresent)
+			{
+				errorMessage = "There isn't that many items.";
+			}
+			else
+			{
+				Tile currentTile = map.getTile(playerX, playerY);
+				
+				// stack to be sent the Tile to add
+				ItemStack stackToAdd = new ItemStack();
+				stackToAdd.setItem(stack.getItem());
+				stackToAdd.setCount(itemsToDrop);
+				
+				// add the Items to the Tile
+				currentTile.addItems(stackToAdd);
+				
+				// remove the items from the inventory stack
+				stack.setCount(itemsPresent - itemsToDrop);
+				return;
+			}
+		}
+		
+		// show an InfoBox with the error message
+		InfoBox box = new InfoBox(31 / 32f, 1 / 16f + slotNumber / 8f, errorMessage);
+		box.tryFitWindow(width, height);
+		boxes.add(box);
+	}
+		
 	/**
 	 * Updates the state of the game. Should prepare data for the paint method.
 	 * @param width width of the window

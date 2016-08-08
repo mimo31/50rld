@@ -1,6 +1,7 @@
 package com.github.mimo31.w50rld;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -166,9 +167,9 @@ public class OptionBox extends Box {
 	}
 	
 	@Override
-	public void key(int keyCode, Runnable removeAction)
+	public void key(KeyEvent event, Runnable removeAction)
 	{
-		switch (keyCode)
+		switch (event.getKeyCode())
 		{
 			// move the selection up
 			case KeyEvent.VK_W:
@@ -192,5 +193,19 @@ public class OptionBox extends Box {
 				removeAction.run();
 				break;
 		}
+	}
+	
+	@Override
+	protected Dimension getSize(int width, int height)
+	{
+		int boxWidth = width / 6;
+		
+		int borderSize = boxWidth / 64;
+		
+		int optionHeight = boxWidth / 6;
+		
+		int boxHeight = (this.options.length + 1) * optionHeight + 2 * borderSize;
+		
+		return new Dimension(boxWidth, boxHeight);
 	}
 }
