@@ -108,6 +108,31 @@ public class Tile {
 				this.structures.get(i).draw(g, x, y, width, height);
 			}
 		}
+		
+		// draw items icon
+		if (this.items != null && !this.items.isEmpty())
+		{
+			g.setColor(Color.red);
+			g.fillRect(x, y, width / 4, height / 4);
+		}
+	}
+	
+	/**
+	 * Returns whether there are some Items lying on the Tile.
+	 * @return whether some Items lie on the Tile
+	 */
+	public boolean hasItems()
+	{
+		return this.items != null && !this.items.isEmpty();
+	}
+	
+	/**
+	 * Returns all Tile's Items.
+	 * @return Tile's Items
+	 */
+	public List<ItemStack> getItems()
+	{
+		return this.items;
 	}
 	
 	/**
@@ -156,5 +181,69 @@ public class Tile {
 			return this.structures.get(numberOfStructures - 1);
 		}
 		return null;
+	}
+	
+	/**
+	 * Add Items to lie on the Tile.
+	 * @param items Items to add
+	 */
+	public void addItems(ItemStack items)
+	{
+		// if items is null, create a new ArrayList
+		if (this.items == null)
+		{
+			this.items = new ArrayList<ItemStack>();
+		}
+		
+		Item item = items.getItem();
+		
+		// check whether there already is a stack with this Item, if yes, increment its count and return
+		for (int i = 0, n = this.items.size(); i < n; i++)
+		{
+			ItemStack currentStack = this.items.get(i);
+			if (currentStack.getItem() == item)
+			{
+				currentStack.setCount(currentStack.getCount() + items.getCount());
+				return;
+			}
+		}
+		
+		// no stack with this Item -> create a new one
+		ItemStack newStack = new ItemStack();
+		newStack.setItem(item);
+		newStack.setCount(items.getCount());
+		
+		this.items.add(newStack);
+	}
+	
+	/**
+	 * Tries to add Items to the player's inventory. If there is not enough space, the Items are let lie on the Tile.
+	 * Does not change the state of the passed stack.
+	 * @param items Items to add
+	 */
+	public void addInventoryItems(ItemStack items)
+	{
+		// create a copy of the stack
+		ItemStack newStack = new ItemStack();
+		newStack.setCount(items.getCount());
+		newStack.setItem(items.getItem());
+		
+		// tries to add the Items to the inventory
+		Main.tryAddInventoryItems(newStack);
+		
+		// if not all items were added, drop them on the Tile
+		if (newStack.getCount() != 0)
+		{
+			this.addItems(newStack);
+		}
+	}
+	
+	/**
+	 * Removes a stack of item from this Tile.
+	 * @param stack the stack to be removed
+	 */
+	public void removeStack(ItemStack stack)
+	{
+		this.items.remove(stack);
 	}
 }

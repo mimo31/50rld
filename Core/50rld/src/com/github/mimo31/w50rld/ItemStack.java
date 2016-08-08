@@ -63,17 +63,28 @@ public class ItemStack {
 	 */
 	public void draw(Graphics2D g, int x, int y, int width, int height)
 	{
+		// fill the background with white
 		g.setColor(Color.white);
 		g.fillRect(x, y, width, height);
+		
+		// if the stack contains no Items, return
 		if (this.item == null || this.count == 0)
 		{
 			return;
 		}
-		this.item.draw(g, x, y, width, height);
+		
+		// size of the draw square for the Item
+		int itemSize = Math.min(width, height);
+		
+		// draw the Item
+		this.item.draw(g, x, y, itemSize, itemSize);
+		
+		// draw the number of Items, if not 1
 		g.setColor(Color.black);
 		if (this.count != 1)
 		{
-			StringDraw.drawMaxString(g, width / 16, String.valueOf(this.count), new Rectangle(x, y + height * 3 / 4, width, height / 4));
+			Rectangle rect = new Rectangle(x, y + height * 3 / 4, width, height / 4);
+			StringDraw.drawMaxString(g, width / 16, String.valueOf(this.count), rect);
 		}
 	}
 }

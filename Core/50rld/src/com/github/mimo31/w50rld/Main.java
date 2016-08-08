@@ -49,7 +49,7 @@ public class Main {
 	private static ItemStack[] inventory = new ItemStack[8];
 	
 	// opened OptionBoxes
-	private static List<OptionBox> boxes = new ArrayList<OptionBox>();
+	private static List<Box> boxes = new ArrayList<Box>();
 	
 	
 	public static void main(String[] args)
@@ -152,7 +152,7 @@ public class Main {
 		{
 			int paintY = height * i / 8;
 			int nextPaintY = height * (i + 1) / 8;
-			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY);
+			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY - paintY);
 		}
 		
 		// draw the boxes
@@ -169,6 +169,23 @@ public class Main {
 	public static void keyReleased(KeyEvent e)
 	{
 		int code = e.getKeyCode();
+		int numberOfBoxes = boxes.size();
+		
+		// if at least one Box is opened, trigger its key function or remove it if the key was Escape
+		if (numberOfBoxes != 0)
+		{
+			if (code == KeyEvent.VK_ESCAPE)
+			{
+				// remove the Box
+				boxes.remove(numberOfBoxes - 1);
+			}
+			else
+			{
+				// pass the event to the Box
+				boxes.get(numberOfBoxes - 1).key(code, () -> boxes.remove(numberOfBoxes - 1));
+			}
+			return;
+		}
 		switch (code)
 		{
 			// handle zooming in and out
@@ -197,60 +214,61 @@ public class Main {
 			
 			// display the action window
 			case KeyEvent.VK_A:
-				// get the top structure of the Tile on which the player is currently standing on
 				Tile currentTile = map.getTile(playerX, playerY);
-				Structure topStructure = currentTile.getTopStructure();
-				
-				// crate arrays for options and actions of the OptionBox
-				String[] options = new String[topStructure.actions.length];
-				Runnable[] actions = new Runnable[options.length];
-				
-				// populate those arrays
-				for (int i = 0; i < actions.length; i++)
+				if (currentTile.hasItems())
 				{
-					StructureAction currentAction = topStructure.actions[i];
-					options[i] = currentAction.name;
-					actions[i] = () -> currentAction.action(playerX, playerY);
+					// there are Items laying on this Tile - show an OptionBox to let the player grab some of them
+					
+					List<ItemStack> items = currentTile.getItems();
+					
+					// declare arrays for options and actions for the OptionBox
+					String[] options = new String[items.size()];
+					Runnable[] actions = new Runnable[options.length];
+					
+					// populate the arrays
+					for (int i = 0; i < options.length; i++)
+					{
+						ItemStack currentStack = items.get(i);
+						
+						// include the name of the Item and the number of items in the option text
+						options[i] = currentStack.getItem().name + " - " + String.valueOf(currentStack.getCount());
+						
+						actions[i] = () -> {
+							// try adding the item in the inventory, if no items were added, show an InfoBox
+							if (!Main.tryAddInventoryItems(currentStack))
+							{
+								boxes.add(new InfoBox(7 / 16f, 1 / 2f, "No space in the inventory!"));
+							}
+							// if all items were added to the inventory, remove the ItemStack from the Tile
+							else if (currentStack.getCount() == 0)
+							{
+								currentTile.removeStack(currentStack);
+							}
+						};
+					}
+					
+					// add the OptionBox
+					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, "Grab items"));
 				}
-				
-				// create an OptionBox in the middle of the map
-				boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
-				break;
-				
-			// close the action window
-			case KeyEvent.VK_ESCAPE:
-				int numberOfBoxes = boxes.size();
-				if (numberOfBoxes != 0)
+				else
 				{
-					boxes.remove(numberOfBoxes - 1);
-				}
-				break;
-				
-			// move the selection up in the active OptionBox
-			case KeyEvent.VK_W:
-				numberOfBoxes = boxes.size();
-				if (numberOfBoxes != 0)
-				{
-					boxes.get(numberOfBoxes - 1).selectionUp();
-				}
-				break;
-				
-			// move the selection down in the active OptionBox
-			case KeyEvent.VK_S:
-				numberOfBoxes = boxes.size();
-				if (numberOfBoxes != 0)
-				{
-					boxes.get(numberOfBoxes - 1).selectionDown();
-				}
-				break;
-				
-			// confirm the selection in the active OptionBox
-			case KeyEvent.VK_ENTER:
-				numberOfBoxes = boxes.size();
-				if (numberOfBoxes != 0)
-				{
-					boxes.get(numberOfBoxes - 1).selectionConfirm();
-					boxes.remove(numberOfBoxes - 1);
+					// get the top structure of the Tile on which the player is currently standing on
+					Structure topStructure = currentTile.getTopStructure();
+					
+					// crate arrays for options and actions of the OptionBox
+					String[] options = new String[topStructure.actions.length];
+					Runnable[] actions = new Runnable[options.length];
+					
+					// populate those arrays
+					for (int i = 0; i < actions.length; i++)
+					{
+						StructureAction currentAction = topStructure.actions[i];
+						options[i] = currentAction.name;
+						actions[i] = () -> currentAction.action(playerX, playerY);
+					}
+					
+					// create an OptionBox in the middle of the map
+					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
 				}
 				break;
 		}
@@ -270,6 +288,85 @@ public class Main {
 			lastMove = 0;
 			movePlayer();
 		}
+	}
+	
+	/**
+	 * Tries to add Items into the inventory.
+	 * Decreases the count in the passed stack according to the amount of items add into the inventory.
+	 * @param items items to add.
+	 * @return true if successfully add at least some items into the inventory, else false
+	 */
+	public static boolean tryAddInventoryItems(ItemStack items)
+	{
+		int count = items.getCount();
+		
+		// the number of items at the start to compare whether some were added at the end
+		int startCount = count;
+		
+		// no items, return
+		if (count == 0)
+		{
+			return false;
+		}
+		
+		Item item = items.getItem();
+		
+		// check each inventory slot whether it contains the same item as we are trying to add
+		for (int i = 0; i < Main.inventory.length; i++)
+		{
+			ItemStack currentStack = Main.inventory[i];
+			
+			// check if the current inventory stack / slot contains something
+			int stackCount = currentStack.getCount();
+			if (stackCount == 0)
+			{
+				continue;
+			}
+			
+			// add as much items to this slot as possible
+			if (currentStack.getItem() == item)
+			{
+				int freeSpaces = 32 - stackCount;
+				if (freeSpaces < count)
+				{
+					count -= freeSpaces;
+					currentStack.setCount(32);
+				}
+				else
+				{
+					currentStack.setCount(stackCount + count);
+					items.setCount(0);
+					return true;
+				}
+			}
+		}
+		
+		// check each inventory slot whether it is empty, if yes add add as much items to it as possible
+		for (int i = 0; i < Main.inventory.length; i++)
+		{
+			ItemStack currentStack = Main.inventory[i];
+			if (currentStack.getCount() == 0)
+			{
+				currentStack.setItem(item);
+				if (count > 32)
+				{
+					currentStack.setCount(32);
+					count -= 32;
+				}
+				else
+				{
+					currentStack.setCount(count);
+					items.setCount(0);
+					return true;
+				}
+			}
+		}
+		
+		// set the new count to the stack
+		items.setCount(count);
+		
+		// return true if the number of items has changed
+		return count != startCount;
 	}
 	
 	/**
@@ -308,22 +405,23 @@ public class Main {
 	 */
 	public static void mouseClicked(MouseEvent event)
 	{
-		// the number of OptionBoxes
+		// the number of Boxes
 		int numberOfBoxes = boxes.size();
 		
 		// if there are some boxes, check whether the top one was clicked
 		if (numberOfBoxes != 0)
 		{
-			// Runnable that removes the top OptionBox
+			// Runnable that removes the current top Box
 			Runnable closeAction = () -> boxes.remove(numberOfBoxes - 1);
 			
-			// the top OptionBox
-			OptionBox box = boxes.get(numberOfBoxes - 1);
+			// the top Box
+			Box box = boxes.get(numberOfBoxes - 1);
 			
-			// if the top box was not clicked, remove it
 			Dimension contentSize = Gui.getContentSize();
 			int width = contentSize.width;
 			int height = contentSize.height;
+			
+			// if the top box was not clicked, remove it
 			if (!box.mouseClicked(event, closeAction, width, height))
 			{
 				closeAction.run();

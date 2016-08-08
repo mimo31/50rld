@@ -4,28 +4,23 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import com.github.mimo31.w50rld.StringDraw.TextAlign;
 
 /**
- * Represents a box on the screen with options with associated actions which are, when the associated option is chosen, executed.
+ * Represents a box with options with associated actions which are, when the associated option is chosen, invoked.
  * @author mimo31
  *
  */
-public class OptionBox {
+public class OptionBox extends Box {
 
 	// names of the options
 	final private String[] options;
 	
 	// actions to execute when the associated option is chosen
 	final private Runnable[] actions;
-	
-	// the x coordinate of the box divided by the width of the window
-	final private float x;
-	
-	// the y coordinate of the box divided by the height of the window
-	final private float y;
 	
 	// the headline of the box
 	final private String headline;
@@ -43,19 +38,19 @@ public class OptionBox {
 	 */
 	public OptionBox(String[] options, Runnable[] actions, float x, float y, String headline)
 	{
+		super(x, y);
 		this.options = options;
 		this.actions = actions;
-		this.x = x;
-		this.y = y;
 		this.headline = headline;
 	}
 	
 	/**
-	 * Draw the OptionBox.
+	 * Draws the OptionBox.
 	 * @param g graphics to draw through
 	 * @param width width of the window
 	 * @param height height of the window
 	 */
+	@Override
 	public void draw(Graphics2D g, int width, int height)
 	{
 		int locX = (int) (this.x * width);
@@ -127,6 +122,7 @@ public class OptionBox {
 	 * @param height height of the window
 	 * @return true if the box was clicked, else false
 	 */
+	@Override
 	public boolean mouseClicked(MouseEvent event, Runnable removeAction, int width, int height)
 	{
 		int clickX = event.getX();
@@ -169,33 +165,32 @@ public class OptionBox {
 		return false;
 	}
 	
-	/**
-	 * Moves the selected option more option up (if the first option isn't already selected). 
-	 */
-	public void selectionUp()
+	@Override
+	public void key(int keyCode, Runnable removeAction)
 	{
-		if (this.selected != 0)
+		switch (keyCode)
 		{
-			this.selected--;
+			// move the selection up
+			case KeyEvent.VK_W:
+				if (this.selected != 0)
+				{
+					this.selected--;
+				}
+				break;
+				
+			// move the selection down
+			case KeyEvent.VK_S:
+				if (this.selected != this.options.length)
+				{
+					this.selected++;
+				}
+				break;
+				
+			// confirm the selection
+			case KeyEvent.VK_ENTER:
+				this.actions[this.selected].run();
+				removeAction.run();
+				break;
 		}
-	}
-	
-	/**
-	 * Moves the selected option more option up (if the last option isn't already selected). 
-	 */
-	public void selectionDown()
-	{
-		if (this.selected != this.options.length)
-		{
-			this.selected++;
-		}
-	}
-	
-	/**
-	 * Invokes the selected option's action.
-	 */
-	public void selectionConfirm()
-	{
-		this.actions[this.selected].run();
 	}
 }

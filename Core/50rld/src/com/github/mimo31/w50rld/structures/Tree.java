@@ -2,6 +2,7 @@ package com.github.mimo31.w50rld.structures;
 
 import java.awt.Graphics2D;
 
+import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
@@ -23,6 +24,12 @@ public class Tree extends Structure {
 			public void action(int tileX, int tileY) {
 				Tile currentTile = Main.map.getTile(tileX, tileY);
 				currentTile.popStructure();
+				
+				ItemStack logs = new ItemStack();
+				logs.setCount(1 + (int) (Math.random() * 3));
+				logs.setItem(ObjectsIndex.getItem("Log"));
+				currentTile.addInventoryItems(logs);
+				
 				currentTile.pushStructure(ObjectsIndex.getStructure("Grass"));
 			}
 			

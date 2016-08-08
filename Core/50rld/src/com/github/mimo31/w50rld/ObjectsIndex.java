@@ -2,7 +2,10 @@ package com.github.mimo31.w50rld;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import com.github.mimo31.w50rld.items.Log;
 import com.github.mimo31.w50rld.structures.*;
 
 /**
@@ -22,33 +25,62 @@ public class ObjectsIndex {
 	private static List<Structure> structures = new ArrayList<Structure>();
 	
 	/**
-	 * Load all the known items and structures into the indexes. Should be called (only) when initializing.
+	 * Load all the known Items and Structures into the indexes. Should be called (only) when initializing.
 	 */
 	public static void loadIndexes()
 	{
 		structures.add(new Bush());
 		structures.add(new Grass());
 		structures.add(new Tree());
+		
+		items.add(new Log());
 	}
 	
 	/**
-	 * Look for a structure with a specified name in the index. If not found, returns null.
-	 * @param name of the structure to look for
-	 * @return the structure with the specified name, null if not found
+	 * Looks for a Structure with a specified name in the index. If not found, returns null.
+	 * @param name of the Structure to look for
+	 * @return the Structure with the specified name, null if not found
 	 */
 	public static Structure getStructure(String name)
 	{
-		// binary search the index
+		return binarySearch((String s1, String s2) -> s1.compareTo(s2), name, structures, (Structure structure) -> structure.name);
+	}
+	
+	/**
+	 * Looks for an Item with a specified name in the index. If not found, returns null.
+	 * @param name of the Item to look for
+	 * @return the Item with the specified name, null if not found
+	 */
+	public static Item getItem(String name)
+	{
+		return binarySearch((String s1, String s2) -> s1.compareTo(s2), name, items, (Item item) -> item.name);
+	}
+	
+	/**
+	 * Generic algorithm for binary search.
+	 * Take a list of items T and a functions that can figure out a key K from an item T.
+	 * It's assumed that the list is sorted by the keys, so that the comparator (another parameter) returns
+	 * - a positive Integer when its first argument follows its second argument in the list,
+	 * - 0 if its first and second argument are the same,
+	 * - a negative Integer if its first argument precedes its second argument.
+	 * @param comparator a function that compares two keys
+	 * @param keyToSearch key to find
+	 * @param items list to search in
+	 * @param keyFromItem a function that gets a key out of an item
+	 * @return the item with the associated key or null if not found
+	 */
+	private static <T, K> T binarySearch(BiFunction<K, K, Integer> comparator, K keyToSearch, List<T> items, Function<T, K> keyFromItem)
+	{
 		int start = 0;
-		int end = structures.size();
+		int end = items.size();
 		while (start < end)
 		{
 			int middle = start + (end - start) / 2;
-			Structure middleStructure = structures.get(middle);
-			int order = name.compareTo(middleStructure.name);
+			T middleItem = items.get(middle);
+			int order = comparator.apply(keyToSearch, keyFromItem.apply(middleItem)).intValue();
 			if (order == 0)
 			{
-				return middleStructure;
+				return middleItem;
 			}
 			else if (order < 0)
 			{
