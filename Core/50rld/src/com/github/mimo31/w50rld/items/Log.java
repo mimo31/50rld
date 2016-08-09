@@ -14,7 +14,7 @@ public class Log extends Item {
 
 	public Log()
 	{
-		super("Log");
+		super("Log", new ItemAction[0]);
 	}
 	
 	@Override

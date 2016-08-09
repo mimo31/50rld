@@ -29,7 +29,7 @@ public class Dirt extends Structure {
 				stack.setCount(1);
 				tile.addInventoryItems(stack);
 			}
-		}});
+		}}, 0);
 	}
 
 	@Override

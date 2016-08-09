@@ -2,6 +2,7 @@ package com.github.mimo31.w50rld.structures;
 
 import java.awt.Graphics2D;
 
+import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
@@ -22,11 +23,18 @@ public class Bush extends Structure {
 			@Override
 			public void action(int tileX, int tileY) {
 				Tile currentTile = Main.map.getTile(tileX, tileY);
+				
 				currentTile.popStructure();
+				
+				ItemStack blends = new ItemStack();
+				blends.setCount(1 + (int) (Math.random() * 2));
+				blends.setItem(ObjectsIndex.getItem("Wood Blend"));
+				currentTile.addInventoryItems(blends);
+				
 				currentTile.pushStructure(ObjectsIndex.getStructure("Grass"));
 			}
 			
-		} });
+		} }, -2);
 	}
 	
 	@Override

@@ -224,4 +224,14 @@ public class Tile {
 	{
 		this.items.remove(stack);
 	}
+	
+	public float getSmoothness()
+	{
+		int structureCount = this.structures.size();
+		if (structureCount == 0)
+		{
+			return 1;
+		}
+		return this.structures.get(structureCount - 1).smoothness;
+	}
 }

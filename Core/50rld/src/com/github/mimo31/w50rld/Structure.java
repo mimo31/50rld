@@ -16,6 +16,10 @@ public abstract class Structure {
 	// action that can be done on this structure by the player
 	public final StructureAction[] actions;
 	
+	// represents the smoothness of the top of the Structure, 
+	// useful when deciding whether another Structure can be placed on top of it
+	public final float smoothness;
+	
 	/**
 	 * Draws the Structure.
 	 * @param g graphics to draw through
@@ -28,9 +32,15 @@ public abstract class Structure {
 
 	public Structure(String name, boolean overdraws, StructureAction[] actions)
 	{
+		this(name, overdraws, actions, 0);
+	}
+	
+	public Structure(String name, boolean overdraws, StructureAction[] actions, float smoothness)
+	{
 		this.name = name;
 		this.overdraws = overdraws;
 		this.actions = actions;
+		this.smoothness = smoothness;
 	}
 	
 	public Structure(String name, StructureAction[] actions)

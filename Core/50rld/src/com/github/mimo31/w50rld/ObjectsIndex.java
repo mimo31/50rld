@@ -37,8 +37,10 @@ public class ObjectsIndex {
 		structures.add(new Water());
 		
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
+		items.add(new GrassPile());
 		items.add(new Log());
 		items.add(new com.github.mimo31.w50rld.items.Sand());
+		items.add(new WoodBlend());
 	}
 	
 	/**

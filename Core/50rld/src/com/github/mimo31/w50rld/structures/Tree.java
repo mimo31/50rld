@@ -30,10 +30,15 @@ public class Tree extends Structure {
 				logs.setItem(ObjectsIndex.getItem("Log"));
 				currentTile.addInventoryItems(logs);
 				
+				ItemStack blends = new ItemStack();
+				blends.setCount(1 + (int) (Math.random() * 2));
+				blends.setItem(ObjectsIndex.getItem("Wood Blend"));
+				currentTile.addInventoryItems(blends);
+				
 				currentTile.pushStructure(ObjectsIndex.getStructure("Grass"));
 			}
 			
-		} });
+		} }, -2);
 	}
 	
 	@Override

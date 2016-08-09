@@ -14,7 +14,7 @@ public class Water extends Structure {
 
 	public Water()
 	{
-		super("Water", true, new StructureAction[0]);
+		super("Water", true, new StructureAction[0], -2);
 	}
 	
 	@Override

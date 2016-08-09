@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.github.mimo31.w50rld.Item.ItemAction;
 import com.github.mimo31.w50rld.Structure.StructureAction;
 
 /**
@@ -323,11 +324,27 @@ public class Main {
 			return;
 		}
 		
+		Item item = inventory[slot].getItem();
+		
+		List<ItemAction> validActions = new ArrayList<ItemAction>();
+		
+		for (int i = 0; i < item.actions.length; i++)
+		{
+			if (item.actions[i].actionPredicate(playerX, playerY))
+			{
+				validActions.add(item.actions[i]);
+			}
+		}
+		
 		// options for the OptionBox
-		String[] options = new String[]{ "Drop" };
+		String[] options = new String[1 + validActions.size()];
 		
 		// actions for the OptionBox
-		Runnable[] actions = new Runnable[]{ () -> {
+		Runnable[] actions = new Runnable[options.length];
+		
+		options[0] = "Drop";
+		
+		actions[0] = () -> {
 			// show an InputBox to ask the user for the amount of Items to drop
 			String request = "Enter the number of items to drop: ";
 			
@@ -341,10 +358,22 @@ public class Main {
 					request, submitFunction, charFilter);
 			box.tryFitWindow(width, height);
 			boxes.add(box);
-		} };
+		};
+		
+		for (int i = 0, n = validActions.size(); i < n; i++)
+		{
+			ItemAction currentAction = validActions.get(i);
+			options[i + 1] = currentAction.name;
+			actions[i + 1] = () -> {
+				if (currentAction.action(playerX, playerY))
+				{
+					inventory[slot].setCount(inventory[slot].getCount() - 1);
+				}
+			};
+		}
 		
 		// headline for the OptionBox
-		String itemName = inventory[slot].getItem().name;
+		String itemName = item.name;
 		
 		// show the OptionBox
 		OptionBox box = new OptionBox(options, actions, 31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,

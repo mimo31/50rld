@@ -2,7 +2,9 @@ package com.github.mimo31.w50rld.structures;
 
 import java.awt.Graphics2D;
 
+import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
+import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Structure;
 import com.github.mimo31.w50rld.Tile;
@@ -21,10 +23,16 @@ public class Grass extends Structure {
 			@Override
 			public void action(int tileX, int tileY) {
 				Tile currentTile = Main.map.getTile(tileX, tileY);
+				
 				currentTile.popStructure();
+				
+				ItemStack pile = new ItemStack();
+				pile.setCount((int) (Math.random() * 5 / 3));
+				pile.setItem(ObjectsIndex.getItem("Grass Pile"));
+				currentTile.addInventoryItems(pile);
 			}
 			
-		} });
+		} }, -1);
 	}
 
 	@Override

@@ -173,6 +173,7 @@ public class OptionBox extends Box {
 		{
 			// move the selection up
 			case KeyEvent.VK_W:
+			case KeyEvent.VK_UP:
 				if (this.selected != 0)
 				{
 					this.selected--;
@@ -181,7 +182,8 @@ public class OptionBox extends Box {
 				
 			// move the selection down
 			case KeyEvent.VK_S:
-				if (this.selected != this.options.length)
+			case KeyEvent.VK_DOWN:
+				if (this.selected != this.options.length - 1)
 				{
 					this.selected++;
 				}
