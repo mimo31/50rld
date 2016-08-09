@@ -12,11 +12,6 @@ import java.util.List;
  *
  */
 public class Tile {
-
-	public enum SurfaceType
-	{
-		WATER, DIRT, SAND
-	}
 	
 	// amount of iron
 	private byte iron;
@@ -26,9 +21,6 @@ public class Tile {
 	
 	// amount of gold
 	private byte gold;
-	
-	// type of surface
-	private SurfaceType surface;
 	
 	// depth of the hole, if any
 	private byte depth;
@@ -47,12 +39,11 @@ public class Tile {
 	 * @param surface the type of surface on this tile
 	 * @param depth the depth of the hole at this tile
 	 */
-	public Tile(byte iron, byte coal, byte gold, SurfaceType surface, byte depth)
+	public Tile(byte iron, byte coal, byte gold, byte depth)
 	{
 		this.iron = iron;
 		this.coal = coal;
 		this.gold = gold;
-		this.surface = surface;
 		this.depth = depth;
 	}
 	
@@ -82,21 +73,8 @@ public class Tile {
 		
 		if (firstStructureIndexToDraw == -1)
 		{
-			// no Structure is declared overdraw, so draw the underlying ground
-			Color color = null;
-			switch (this.surface)
-			{
-				case WATER:
-					color = Color.blue;
-					break;
-				case DIRT:
-					color = new Color(166, 104, 42);
-					break;
-				case SAND:
-					color = Color.yellow;
-					break;
-			}
-			g.setColor(color);
+			// no Structure is declared overdraw, so draw the underlying rock
+			g.setColor(Color.gray);
 			g.fillRect(x, y, width, height);
 		}
 		

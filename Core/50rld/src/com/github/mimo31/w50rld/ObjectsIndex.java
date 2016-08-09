@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.github.mimo31.w50rld.items.Log;
+import com.github.mimo31.w50rld.items.*;
 import com.github.mimo31.w50rld.structures.*;
 
 /**
@@ -30,10 +30,15 @@ public class ObjectsIndex {
 	public static void loadIndexes()
 	{
 		structures.add(new Bush());
+		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new Grass());
+		structures.add(new com.github.mimo31.w50rld.structures.Sand());
 		structures.add(new Tree());
+		structures.add(new Water());
 		
+		items.add(new com.github.mimo31.w50rld.items.Dirt());
 		items.add(new Log());
+		items.add(new com.github.mimo31.w50rld.items.Sand());
 	}
 	
 	/**

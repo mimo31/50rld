@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.github.mimo31.w50rld.Tile.SurfaceType;
-
 /**
  * Represents a 64x64 grid of Tiles on the map.
  * 
@@ -88,18 +86,22 @@ public class Chunk {
 				double depth = strongestBiomeNoise - (noiseSum - strongestBiomeNoise) / 3;
 				
 				// structures to be placed on this Tile
-				List<Structure> structures = null;
+				List<Structure> structures = new ArrayList<Structure>();
 				
-				// determine the SurfaceType of the Tile based on the strongest noise
-				SurfaceType surfaceType = null;
+				// determine the biome of the Tile based on the strongest noise
 				switch (strongestBiomeNoiseNumber)
 				{
 					case 0:
-						surfaceType = SurfaceType.WATER;
+						// put two Water Structures
+						Structure waterStructure = ObjectsIndex.getStructure("Water");
+						structures.add(waterStructure);
+						structures.add(waterStructure);
 						break;
 					case 1:
-						surfaceType = SurfaceType.DIRT;
-						structures = new ArrayList<Structure>();
+						// put two Dirt Structures
+						Structure dirtStructure = ObjectsIndex.getStructure("Dirt");
+						structures.add(dirtStructure);
+						structures.add(dirtStructure);
 						
 						// scale the depth to make the work with it easier
 						depth *= 3;
@@ -126,8 +128,11 @@ public class Chunk {
 						}
 						break;
 					case 2:
-						surfaceType = SurfaceType.DIRT;
-						structures = new ArrayList<Structure>();
+						// put two Dirt Structures
+						dirtStructure = ObjectsIndex.getStructure("Dirt");
+						structures.add(dirtStructure);
+						structures.add(dirtStructure);
+						
 						// decide whether to put a Grass or a Bush
 						if (getSmallStructureData(globalXCoor, globalYCoor, 3) + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
 						{
@@ -139,12 +144,15 @@ public class Chunk {
 						}
 						break;
 					case 3:
-						surfaceType = SurfaceType.SAND;
+						// put two Sand Structures
+						Structure sandStructure = ObjectsIndex.getStructure("Sand");
+						structures.add(sandStructure);
+						structures.add(sandStructure);
 						break;
 				}
 				
 				// assign the Tile
-				this.tiles[tileChunkIndex] = new Tile(coal, iron, gold, surfaceType, (byte) 0);
+				this.tiles[tileChunkIndex] = new Tile(coal, iron, gold, (byte) 0);
 				
 				// assign Tile's Structures
 				this.tiles[tileChunkIndex].setStructures(structures);

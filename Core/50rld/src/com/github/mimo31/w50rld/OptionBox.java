@@ -189,7 +189,10 @@ public class OptionBox extends Box {
 				
 			// confirm the selection
 			case KeyEvent.VK_ENTER:
-				this.actions[this.selected].run();
+				if (this.actions.length != 0)
+				{
+					this.actions[this.selected].run();
+				}
 				removeAction.run();
 				break;
 		}
