@@ -30,6 +30,11 @@ public class InputBox extends Box {
 	private final Function<Integer, Boolean> charFilter;
 	
 	/**
+	 * Character Filter that allows only digits.
+	 */
+	public static final Function<Integer, Boolean> DIGIT_FILTER = (chr) -> new Boolean(chr.intValue() >= '0' && chr.intValue() <= '9');
+	
+	/**
 	 * Creates an InputBox.
 	 * @param x x location of the Box divided by the width of the window
 	 * @param y y location of the Box divided by the height of the window

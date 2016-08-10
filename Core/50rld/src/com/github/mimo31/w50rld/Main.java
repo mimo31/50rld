@@ -189,7 +189,8 @@ public class Main {
 			else
 			{
 				// pass the event to the Box
-				boxes.get(numberOfBoxes - 1).key(e, () -> boxes.remove(numberOfBoxes - 1));
+				Box topBox = boxes.get(numberOfBoxes - 1);
+				boxes.get(numberOfBoxes - 1).key(e, () -> boxes.remove(topBox));
 			}
 			return;
 		}
@@ -289,6 +290,12 @@ public class Main {
 					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
 				}
 				break;
+			// show a Combine Box
+			case KeyEvent.VK_C:
+				CombineBox box = new CombineBox(7 / 16f, 1 / 2f);
+				box.tryFitWindow(width, height);
+				boxes.add(box);
+				break;
 		}
 		
 		// check if the player wants to see the actions of an inventory slot
@@ -352,7 +359,7 @@ public class Main {
 			Consumer<String> submitFunction = (inputString) -> { drop(slot, inputString, width, height); };
 			
 			// allow only digits
-			Function<Integer, Boolean> charFilter = (chr) -> new Boolean(chr.intValue() >= '0' && chr.intValue() <= '9');
+			Function<Integer, Boolean> charFilter = InputBox.DIGIT_FILTER;
 			
 			InputBox box = new InputBox(31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,
 					request, submitFunction, charFilter);
@@ -524,13 +531,11 @@ public class Main {
 		if (numberOfBoxes != 0)
 		{
 			// Runnable that removes the current top Box
-			Runnable closeAction = () -> boxes.remove(numberOfBoxes - 1);
-			
-			// the top Box
-			Box box = boxes.get(numberOfBoxes - 1);
+			Box topBox = boxes.get(numberOfBoxes - 1);
+			Runnable closeAction = () -> boxes.remove(topBox);
 			
 			// if the top box was not clicked, remove it
-			if (!box.mouseClicked(event, closeAction, width, height))
+			if (!topBox.mouseClicked(event, closeAction, width, height))
 			{
 				closeAction.run();
 			}
@@ -627,7 +632,151 @@ public class Main {
 		box.tryFitWindow(width, height);
 		boxes.add(box);
 	}
+	
+	/**
+	 * Adds a Box to the top.
+	 * @param box Box to add.
+	 */
+	public static void addBox(Box box)
+	{
+		boxes.add(box);
+	}
+	
+	/**
+	 * Returns a slot from the inventory.
+	 * @param number number of the inventory slot
+	 * @return an inventory slot
+	 */
+	public static ItemStack getInventorySlot(int number)
+	{
+		return inventory[number];
+	}
+	
+	/**
+	 * Tries to change the contents of the inventory by applying a Recipe a specified number of times.
+	 * Used primarily to accept player's combine submissions.
+	 * @param recipe the Recipe to apply
+	 * @param times the number of times to apply the Recipe
+	 */
+	public static void tryApplyRecipe(Recipe recipe, String times)
+	{
+		// error to display to the player, if no error occurs, remains null
+		String errorMessage = null;
 		
+		// length of the input the player entered
+		int inputLength = times.length();
+		
+		// remove eventual zeroes
+		int i = 0;
+		while ((i + 1) < inputLength && times.charAt(i) == '0')
+		{
+			i++;
+		}
+		if (i != 0)
+		{
+			times = times.substring(i, inputLength - 1);
+		}
+		
+		// subtract the number of zeroes removed
+		inputLength -= i;
+		
+		// the player hasn't entered anything
+		if (inputLength == 0)
+		{
+			errorMessage = "You must enter a number.";
+		}
+		// the player has entered more than 3 digit number, they certainly doesn't have enough Items for that
+		else if (inputLength > 3)
+		{
+			errorMessage = "You don't have enough items.";
+		}
+		else
+		{
+			// the number of timer the player wants to apply the Recipe
+			int numberOfTimes = Integer.parseInt(times);
+			
+			// check if the player has enough Items
+			for (i = 0; i < recipe.requiredItems.length; i++)
+			{
+				Item currentItem = recipe.requiredItems[i];
+				
+				// Items available in the player's inventory
+				int itemsAvailable = 0;
+				for (int j = 0; j < 8; j++)
+				{
+					if (currentItem == inventory[j].getItem())
+					{
+						itemsAvailable += inventory[j].getCount();
+					}
+				}
+				
+				// Items required by the Recipe
+				int itemsRequired = numberOfTimes * recipe.requiredCounts[i];
+				
+				// set an error message if there is not enough items
+				if (itemsRequired > itemsAvailable)
+				{
+					errorMessage = "You need " + String.valueOf(itemsRequired) + " " + currentItem.name + " items and you have only " + String.valueOf(itemsAvailable) + ".";
+					break;
+				}
+			}
+			
+			// check if an error hasn't occurred
+			if (errorMessage == null)
+			{
+				// removed the required Items from the inventory
+				for (i = 0; i < recipe.requiredItems.length; i++)
+				{
+					Item currentItem = recipe.requiredItems[i];
+					
+					// Items to remove by the Recipe
+					int itemsToRemove = numberOfTimes * recipe.requiredCounts[i];
+					
+					// iterate through the inventory until all required Items are not removed
+					for (int j = 0; j < 8; j++)
+					{
+						if (currentItem == inventory[j].getItem())
+						{
+							int slotCount = inventory[j].getCount();
+							if (slotCount < itemsToRemove)
+							{
+								itemsToRemove -= slotCount;
+								slotCount = 0;
+							}
+							else
+							{
+								slotCount -= itemsToRemove;
+								itemsToRemove = 0;
+							}
+							inventory[j].setCount(slotCount);
+							if (itemsToRemove == 0)
+							{
+								break;
+							}
+						}
+					}
+				}
+				
+				// stack of created Items to be added to the inventory
+				ItemStack resultStack = new ItemStack();
+				resultStack.setCount(numberOfTimes * recipe.resultCount);
+				resultStack.setItem(recipe.resultItem);
+				
+				// add the created Items to the inventory or possibly drop them on the current Tile
+				map.getTile(playerX, playerY).addInventoryItems(resultStack);
+				
+				return;
+			}
+		}
+		
+		// show the error message
+		InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
+		Dimension windowSize = Gui.getContentSize();
+		box.tryFitWindow(windowSize.width, windowSize.height);
+		
+		boxes.add(box);
+	}
+	
 	/**
 	 * Updates the state of the game. Should prepare data for the paint method.
 	 * @param width width of the window

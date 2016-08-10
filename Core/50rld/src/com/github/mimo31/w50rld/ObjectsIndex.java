@@ -24,11 +24,14 @@ public class ObjectsIndex {
 	// alphabetically sorted index of all game Structures
 	private static List<Structure> structures = new ArrayList<Structure>();
 	
+	private static List<Recipe> recipes = new ArrayList<Recipe>();
+	
 	/**
 	 * Load all the known Items and Structures into the indexes. Should be called (only) when initializing.
 	 */
 	public static void loadIndexes()
 	{
+		// add all Items
 		structures.add(new Bush());
 		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new Grass());
@@ -36,11 +39,16 @@ public class ObjectsIndex {
 		structures.add(new Tree());
 		structures.add(new Water());
 		
+		// add all Structures
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
 		items.add(new GrassPile());
 		items.add(new Log());
 		items.add(new com.github.mimo31.w50rld.items.Sand());
+		items.add(new Sticks());
 		items.add(new WoodBlend());
+		
+		// add all Recipes
+		Recipe.addAllRecipes(recipes);
 	}
 	
 	/**
@@ -98,6 +106,55 @@ public class ObjectsIndex {
 				start = middle + 1;
 			}
 		}
+		return null;
+	}
+	
+	/**
+	 * Returns a Recipe whose required Items are the same as the specified required Items (or possibly a permutation of them).
+	 * @param requiredItems Item to be required by the Recipe
+	 * @return the Recipe with required Items as specified
+	 */
+	public static Recipe getRecipe(Item[] requiredItems)
+	{
+		// iterate through all the recipe and look for a match
+		for (int i = 0, n = recipes.size(); i < n; i++)
+		{
+			Recipe currentRecipe = recipes.get(i);
+			
+			// if the numbers for required items differ, then this Recipes can't be the one we are looking for
+			if (requiredItems.length != currentRecipe.requiredItems.length)
+			{
+				continue;
+			}
+			boolean matches = true;
+			
+			// iterate through all the required Items and check if there is a corresponding item
+			for (int j = 0; j < requiredItems.length; j++)
+			{
+				boolean found = false;
+				for (int k = 0; k < currentRecipe.requiredItems.length; k++)
+				{
+					if (requiredItems[j] == currentRecipe.requiredItems[k])
+					{
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+				{
+					matches = false;
+					break;
+				}
+			}
+			
+			// if there was found a match for every required Item, then this must the Recipe we are looking for
+			if (matches)
+			{
+				return currentRecipe;
+			}
+		}
+		
+		// not Recipe was already returned - no Recipe matches - return null
 		return null;
 	}
 }

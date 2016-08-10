@@ -1,5 +1,6 @@
 package com.github.mimo31.w50rld;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 
 /**
@@ -65,6 +66,36 @@ public abstract class Item {
 		 */
 		public abstract boolean action(int tileX, int tileY);
 		
+	}
+	
+	/**
+	 * Draw an Item with a border around it.
+	 * @param g the graphics to draw through
+	 * @param x x coordinate to draw to
+	 * @param y y coordinate to draw to
+	 * @param width width of the rectangle to draw to
+	 * @param height height of the rectangle to draw to
+	 * @param borderColor color of the border
+	 * @param item Item to draw
+	 */
+	public static void drawWithBorder(Graphics2D g, int x, int y, int width, int height, Color borderColor, Item item)
+	{
+		// draw the background - only the border will be actually visible from it
+		g.setColor(borderColor);
+		g.fillRect(x, y, width, height);
+		
+		// width of the border
+		int borderSize = Math.min(width, height) / 12;
+		
+		// draw the background for the item
+		g.setColor(Color.white);
+		g.fillRect(x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+		
+		// draw the Item if not null
+		if (item != null)
+		{
+			item.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+		}
 	}
 }
 
