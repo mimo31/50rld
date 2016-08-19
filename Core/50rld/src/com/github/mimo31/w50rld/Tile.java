@@ -29,7 +29,7 @@ public class Tile {
 	private List<ItemStack> items = null;
 	
 	// structures on the Tile, the first item in this list is the Structure farthest from the surface
-	private List<Structure> structures = null;
+	private List<StructureData> structures = null;
 	
 	/**
 	 * Creates a new Tile object with the specified fields.
@@ -61,9 +61,9 @@ public class Tile {
 		int firstStructureIndexToDraw = -1;
 		if (this.structures != null)
 		{
-			for (int i = this.structures.size() - 1; i >= 0; i++)
+			for (int i = this.structures.size() - 1; i >= 0; i--)
 			{
-				if (this.structures.get(i).overdraws)
+				if (this.structures.get(i).structure.overdraws)
 				{
 					firstStructureIndexToDraw = i;
 					break;
@@ -83,7 +83,7 @@ public class Tile {
 		{
 			for (int i = (firstStructureIndexToDraw == -1) ? 0 : firstStructureIndexToDraw, n = this.structures.size(); i < n; i++)
 			{
-				this.structures.get(i).draw(g, x, y, width, height);
+				this.structures.get(i).structure.draw(g, x, y, width, height);
 			}
 		}
 		
@@ -117,7 +117,7 @@ public class Tile {
 	 * Sets the Tile's structures property.
 	 * @param structures Structure list to set
 	 */
-	public void setStructures(List<Structure> structures)
+	public void setStructures(List<StructureData> structures)
 	{
 		this.structures = structures;
 	}
@@ -142,16 +142,16 @@ public class Tile {
 	{
 		if (this.structures == null)
 		{
-			this.structures = new ArrayList<Structure>();
+			this.structures = new ArrayList<StructureData>();
 		}
-		this.structures.add(structure);
+		this.structures.add(structure.createStructureData());
 	}
 	
 	/**
 	 * Return the Structure at the top. Return null if no Structures are present.
 	 * @return Tile's top Structure or null if no Structures are present
 	 */
-	public Structure getTopStructure()
+	public StructureData getTopStructure()
 	{
 		int numberOfStructures;
 		if (this.structures != null && (numberOfStructures = this.structures.size()) != 0)
@@ -225,6 +225,10 @@ public class Tile {
 		this.items.remove(stack);
 	}
 	
+	/**
+	 * Returns the smoothness of the Tile. That is the smoothness of the top Structure or 1 as the smoothness of the bare rock when no Structure is present.
+	 * @return the smoothness of the Tile
+	 */
 	public float getSmoothness()
 	{
 		int structureCount = this.structures.size();
@@ -232,6 +236,20 @@ public class Tile {
 		{
 			return 1;
 		}
-		return this.structures.get(structureCount - 1).smoothness;
+		return this.structures.get(structureCount - 1).structure.smoothness;
+	}
+	
+	/**
+	 * Call the Update method of all the Structures at this Tile.
+	 * @param tileX x coordinate of the Tile
+	 * @param tileY y coordinate of the Tile
+	 * @param deltaTime time difference to cover in the update
+	 */
+	public void updateStructures(int tileX, int tileY, int deltaTime)
+	{
+		for (int i = 0, n = this.structures.size(); i < n; i++)
+		{
+			this.structures.get(i).update(tileX, tileY, deltaTime);
+		}
 	}
 }

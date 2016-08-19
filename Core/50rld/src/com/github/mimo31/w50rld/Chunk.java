@@ -86,7 +86,7 @@ public class Chunk {
 				double depth = strongestBiomeNoise - (noiseSum - strongestBiomeNoise) / 3;
 				
 				// structures to be placed on this Tile
-				List<Structure> structures = new ArrayList<Structure>();
+				List<StructureData> structures = new ArrayList<StructureData>();
 				
 				// determine the biome of the Tile based on the strongest noise
 				switch (strongestBiomeNoiseNumber)
@@ -94,14 +94,14 @@ public class Chunk {
 					case 0:
 						// put two Water Structures
 						Structure waterStructure = ObjectsIndex.getStructure("Water");
-						structures.add(waterStructure);
-						structures.add(waterStructure);
+						structures.add(new StructureData(waterStructure));
+						structures.add(new StructureData(waterStructure));
 						break;
 					case 1:
 						// put two Dirt Structures
 						Structure dirtStructure = ObjectsIndex.getStructure("Dirt");
-						structures.add(dirtStructure);
-						structures.add(dirtStructure);
+						structures.add(new StructureData(dirtStructure));
+						structures.add(new StructureData(dirtStructure));
 						
 						// scale the depth to make the work with it easier
 						depth *= 3;
@@ -116,38 +116,38 @@ public class Chunk {
 						// decide which structure will be placed on this Tile
 						if (strData < grassP)
 						{
-							structures.add(ObjectsIndex.getStructure("Grass"));
+							structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
 						}
 						else if (strData < bushP)
 						{
-							structures.add(ObjectsIndex.getStructure("Bush"));
+							structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
 						}
 						else
 						{
-							structures.add(ObjectsIndex.getStructure("Tree"));
+							structures.add(new StructureData(ObjectsIndex.getStructure("Tree")));
 						}
 						break;
 					case 2:
 						// put two Dirt Structures
 						dirtStructure = ObjectsIndex.getStructure("Dirt");
-						structures.add(dirtStructure);
-						structures.add(dirtStructure);
+						structures.add(new StructureData(dirtStructure));
+						structures.add(new StructureData(dirtStructure));
 						
 						// decide whether to put a Grass or a Bush
 						if (getSmallStructureData(globalXCoor, globalYCoor, 3) + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
 						{
-							structures.add(ObjectsIndex.getStructure("Bush"));
+							structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
 						}
 						else
 						{
-							structures.add(ObjectsIndex.getStructure("Grass"));
+							structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
 						}
 						break;
 					case 3:
 						// put two Sand Structures
 						Structure sandStructure = ObjectsIndex.getStructure("Sand");
-						structures.add(sandStructure);
-						structures.add(sandStructure);
+						structures.add(new StructureData(sandStructure));
+						structures.add(new StructureData(sandStructure));
 						break;
 				}
 				

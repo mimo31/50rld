@@ -36,5 +36,10 @@ public class Recipe {
 	public static void addAllRecipes(List<Recipe> recipes)
 	{
 		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Wood Blend") }, new int[] { 1 }, ObjectsIndex.getItem("Sticks"), 1 ));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Sticks"), ObjectsIndex.getItem("Log") }, new int[] { 2, 2 }, ObjectsIndex.getItem("Table"), 1));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Grass Pile") }, new int[] { 2 }, ObjectsIndex.getItem("Cord"), 1));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Sticks"), ObjectsIndex.getItem("Cord")}, new int[] { 1, 1 }, ObjectsIndex.getItem("Handle"), 1));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Log"), ObjectsIndex.getItem("Handle")}, new int[] { 1, 1 }, ObjectsIndex.getItem("Hammer"), 1));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Hammer"), ObjectsIndex.getItem("Grass Pile")}, new int[] { 0, 1 }, ObjectsIndex.getItem("Grass Seeds"), 2));
 	}
 }

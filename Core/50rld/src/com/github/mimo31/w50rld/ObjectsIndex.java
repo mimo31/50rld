@@ -31,20 +31,27 @@ public class ObjectsIndex {
 	 */
 	public static void loadIndexes()
 	{
-		// add all Items
+		// add all Structures
 		structures.add(new Bush());
 		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new Grass());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
+		structures.add(new SeededGrass());
+		structures.add(new com.github.mimo31.w50rld.structures.Table());
 		structures.add(new Tree());
 		structures.add(new Water());
 		
-		// add all Structures
+		// add all Items
+		items.add(new Cord());
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
 		items.add(new GrassPile());
+		items.add(new GrassSeeds());
+		items.add(new Hammer());
+		items.add(new Handle());
 		items.add(new Log());
 		items.add(new com.github.mimo31.w50rld.items.Sand());
 		items.add(new Sticks());
+		items.add(new com.github.mimo31.w50rld.items.Table());
 		items.add(new WoodBlend());
 		
 		// add all Recipes

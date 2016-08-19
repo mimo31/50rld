@@ -27,7 +27,7 @@ public class Grass extends Structure {
 				currentTile.popStructure();
 				
 				ItemStack pile = new ItemStack();
-				pile.setCount((int) (Math.random() * 5 / 3));
+				pile.setCount(Math.random() < 3 / 4d ? 1 : 0);
 				pile.setItem(ObjectsIndex.getItem("Grass Pile"));
 				currentTile.addInventoryItems(pile);
 			}

@@ -165,4 +165,24 @@ public class Map {
 		
 		return tiles;
 	}
+	
+	/**
+	 * Updates all Tile Structures in a specified rectangle.
+	 * @param x x coordinate of the rectangle to update
+	 * @param y y coordinate of the rectangle to update
+	 * @param width width of the rectangle to update
+	 * @param height height of the rectangle to update
+	 * @param deltaTime time difference to cover in the update
+	 */
+	public void updateTiles(int x, int y, int width, int height, int deltaTime)
+	{
+		Tile[] tilesToUpdate = this.getTiles(x, y, width, height);
+		for (int i = 0; i < height; i++)
+		{
+			for (int j = 0; j < width; j++)
+			{
+				tilesToUpdate[i * width + j].updateStructures(j + x, i + y, deltaTime);
+			}
+		}
+	}
 }

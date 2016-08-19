@@ -32,4 +32,7 @@ public class Constants {
 	
 	// probability of a Bush appearing in a grass biome
 	public static final float BUSH_IN_GRASS_PROB = 0.0078125f;
+	
+	// half the side length of the square around the player location that is updated in updates
+	public static final int UPDATE_RADIUS = 128;
 }

@@ -272,7 +272,7 @@ public class Main {
 				else
 				{
 					// get the top structure of the Tile on which the player is currently standing on
-					Structure topStructure = currentTile.getTopStructure();
+					Structure topStructure = currentTile.getTopStructure().structure;
 					
 					// crate arrays for options and actions of the OptionBox
 					String[] options = new String[topStructure.actions.length];
@@ -805,6 +805,9 @@ public class Main {
 			movePlayer();
 			lastMove = currentTime;
 		}
+		
+		// update all Tile in the update radius
+		map.updateTiles(playerX - Constants.UPDATE_RADIUS, playerY - Constants.UPDATE_RADIUS, Constants.UPDATE_RADIUS * 2, Constants.UPDATE_RADIUS * 2, delta);
 	}
 	
 	/**

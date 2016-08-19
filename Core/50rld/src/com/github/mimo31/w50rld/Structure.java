@@ -66,4 +66,13 @@ public abstract class Structure {
 		// action to perform
 		public abstract void action(int tileX, int tileY);
 	}
+	
+	/**
+	 * Returns the Structure Data for a newly created structure of this Structure type.
+	 * @return Structure Data for a newly created structure
+	 */
+	public StructureData createStructureData()
+	{
+		return new StructureData(this);
+	}
 }
