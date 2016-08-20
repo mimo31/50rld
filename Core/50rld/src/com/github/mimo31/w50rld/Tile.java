@@ -73,9 +73,25 @@ public class Tile {
 		
 		if (firstStructureIndexToDraw == -1)
 		{
-			// no Structure is declared overdraw, so draw the underlying rock
-			g.setColor(Color.gray);
-			g.fillRect(x, y, width, height);
+			// no Structure is declared overdraw, so draw the underlying rock or end
+			PaintUtils.drawSquareTexture(g, x, y, width, height, this.depth == 32 ? "End.png" : "RockS.png");
+			
+			// draw the ores if present
+			if (this.depth != 32)
+			{
+				if (this.getIronAmount() != 0)
+				{
+					PaintUtils.drawSquareTexture(g, x, y, width, height, "IronOreS.png");
+				}
+				if (this.getCoalAmount() != 0)
+				{
+					PaintUtils.drawSquareTexture(g, x, y, width, height, "CoalS.png");
+				}
+				if (this.getGoldAmount() != 0)
+				{
+					PaintUtils.drawSquareTexture(g, x, y, width, height, "GoldOreS.png");
+				}
+			}
 		}
 		
 		// draw all the Structures that need to be drawn
@@ -251,5 +267,64 @@ public class Tile {
 		{
 			this.structures.get(i).update(tileX, tileY, deltaTime);
 		}
+	}
+	
+	/**
+	 * Returns whether there are some structures on the Tile.
+	 * @return whether there are some structures
+	 */
+	public boolean hasStructures()
+	{
+		return !this.structures.isEmpty();
+	}
+	
+	/**
+	 * Returns the depth of the hole at the Tile. That is the amount of rock mined.
+	 * @return the depth of the hole
+	 */
+	public int getDepth()
+	{
+		return this.depth;
+	}
+	
+	/**
+	 * Increments the depth of the hole by one.
+	 */
+	public void incrementDepth()
+	{
+		this.depth++;
+	}
+	
+	/**
+	 * Returns the amount of iron currently available at the top.
+	 * @return the amount of iron at the top
+	 */
+	public int getIronAmount()
+	{
+		int totalAmount = (this.iron + 128) / 8;
+		int middleDistance = Math.abs(8 - this.depth) + 1 + (this.depth < 8 ? 1 : 0);
+		return middleDistance > totalAmount ? 0 : (middleDistance + 16 > totalAmount ? 1 : 2);
+	}
+	
+	/**
+	 * Returns the amount of coal currently available at the top.
+	 * @return the amount of coal at the top
+	 */
+	public int getCoalAmount()
+	{
+		int totalAmount = (this.coal + 128) / 8;
+		int middleDistance = Math.abs(16 - this.depth) + 1 + (this.depth < 16 ? 1 : 0);
+		return middleDistance > totalAmount ? 0 : (middleDistance + 16 > totalAmount ? 1 : 2);
+	}
+	
+	/**
+	 * Returns the amount of gold currently available at the top.
+	 * @return the amount of gold at the top
+	 */
+	public int getGoldAmount()
+	{
+		int totalAmount = (this.gold + 128) / 8;
+		int middleDistance = Math.abs(24 - this.depth) + 1 + (this.depth < 24 ? 1 : 0);
+		return middleDistance > totalAmount ? 0 : (middleDistance + 16 > totalAmount ? 1 : 2);
 	}
 }

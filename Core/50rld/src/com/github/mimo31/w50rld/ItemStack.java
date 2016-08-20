@@ -12,7 +12,7 @@ import java.awt.Rectangle;
 public class ItemStack {
 
 	// the number of items in this stack
-	private byte count = 0;
+	private int count = 0;
 	
 	// Item type stored
 	private Item item = null;

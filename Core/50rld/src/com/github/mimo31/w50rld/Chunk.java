@@ -63,9 +63,9 @@ public class Chunk {
 				
 				// get the ore amounts - if the noise function is lower than the limit, return 0,
 				// else calculate the amount using the getSmallStructureData function
-				byte coal = (oreNoises[0][tileChunkIndex] < Constants.COAL_ORE_LIMIT) ? 0 : getSmallStructureData(globalXCoor, globalYCoor, 0);
-				byte iron = (oreNoises[1][tileChunkIndex] < Constants.IRON_ORE_LIMIT) ? 0 : getSmallStructureData(globalXCoor, globalYCoor, 1);
-				byte gold = (oreNoises[2][tileChunkIndex] < Constants.GOLD_ORE_LIMIT) ? 0 : getSmallStructureData(globalXCoor, globalYCoor, 2);
+				byte coal = (oreNoises[0][tileChunkIndex] < Constants.COAL_ORE_LIMIT) ? -128 : getSmallStructureData(globalXCoor, globalYCoor, 0);
+				byte iron = (oreNoises[1][tileChunkIndex] < Constants.IRON_ORE_LIMIT) ? -128 : getSmallStructureData(globalXCoor, globalYCoor, 1);
+				byte gold = (oreNoises[2][tileChunkIndex] < Constants.GOLD_ORE_LIMIT) ? -128 : getSmallStructureData(globalXCoor, globalYCoor, 2);
 				
 				// find the strongest biome noise
 				double strongestBiomeNoise = 0;

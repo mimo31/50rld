@@ -42,13 +42,19 @@ public class ObjectsIndex {
 		structures.add(new Water());
 		
 		// add all Items
+		items.add(new Coal());
 		items.add(new Cord());
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
+		items.add(new GoldOre());
 		items.add(new GrassPile());
 		items.add(new GrassSeeds());
+		items.add(new Gravel());
 		items.add(new Hammer());
 		items.add(new Handle());
+		items.add(new IronOre());
 		items.add(new Log());
+		items.add(new Rock());
+		items.add(new RockHammer());
 		items.add(new com.github.mimo31.w50rld.items.Sand());
 		items.add(new Sticks());
 		items.add(new com.github.mimo31.w50rld.items.Table());

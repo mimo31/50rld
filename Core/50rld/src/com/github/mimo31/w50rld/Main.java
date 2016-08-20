@@ -269,7 +269,7 @@ public class Main {
 					
 					boxes.add(box);
 				}
-				else
+				else if (currentTile.hasStructures())
 				{
 					// get the top structure of the Tile on which the player is currently standing on
 					Structure topStructure = currentTile.getTopStructure().structure;
@@ -288,6 +288,19 @@ public class Main {
 					
 					// create an OptionBox in the middle of the map
 					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
+				}
+				else if (currentTile.getDepth() < 32)
+				{
+					// provide an interface with an action of taking a Rock by hand
+					Runnable[] actions = new Runnable[] {() -> {
+						ItemStack rocks = new ItemStack();
+						rocks.setCount(1);
+						rocks.setItem(ObjectsIndex.getItem("Rock"));
+						currentTile.addInventoryItems(rocks);
+						currentTile.incrementDepth();
+					}
+					};
+					boxes.add(new OptionBox(new String[] { "Take A Rock" }, actions, 7 / 16f, 1 / 2f, "Rock"));
 				}
 				break;
 			// show a Combine Box

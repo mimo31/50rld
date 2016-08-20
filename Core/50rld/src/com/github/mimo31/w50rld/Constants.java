@@ -11,12 +11,12 @@ public class Constants {
 	public static final int BIOME_SCALE = 64;
 	
 	// scale for the ore generation, the bigger the scale, the bigger the ore deposits and the bigger spaces between them
-	public static final int ORE_SCALE = 32;
+	public static final int ORE_SCALE = 16;
 	
 	// ore limits for the ore generation, if the noise function exceeds the limit at some point, a deposit will appear there
 	public static final double COAL_ORE_LIMIT = 0.6;
 	public static final double IRON_ORE_LIMIT = 0.6;
-	public static final double GOLD_ORE_LIMIT = 0.7;
+	public static final double GOLD_ORE_LIMIT = 0.65;
 	
 	// maximal possible zoom
 	public static final int MAX_ZOOM = 5;
