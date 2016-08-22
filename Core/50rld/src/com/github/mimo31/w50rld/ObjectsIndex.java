@@ -24,7 +24,11 @@ public class ObjectsIndex {
 	// alphabetically sorted index of all game Structures
 	private static List<Structure> structures = new ArrayList<Structure>();
 	
+	// all the recipes, not sorted
 	private static List<Recipe> recipes = new ArrayList<Recipe>();
+	
+	// all the table recipes sorted by the names of the required items
+	private static List<TableRecipe> tableRecipes = new ArrayList<TableRecipe>();
 	
 	/**
 	 * Load all the known Items and Structures into the indexes. Should be called (only) when initializing.
@@ -33,6 +37,7 @@ public class ObjectsIndex {
 	{
 		// add all Structures
 		structures.add(new Bush());
+		structures.add(new com.github.mimo31.w50rld.structures.Chest());
 		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new Grass());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
@@ -42,6 +47,7 @@ public class ObjectsIndex {
 		structures.add(new Water());
 		
 		// add all Items
+		items.add(new com.github.mimo31.w50rld.items.Chest());
 		items.add(new Coal());
 		items.add(new Cord());
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
@@ -62,6 +68,7 @@ public class ObjectsIndex {
 		
 		// add all Recipes
 		Recipe.addAllRecipes(recipes);
+		TableRecipe.addAllRecipes(tableRecipes);
 	}
 	
 	/**
@@ -169,5 +176,66 @@ public class ObjectsIndex {
 		
 		// not Recipe was already returned - no Recipe matches - return null
 		return null;
+	}
+	
+	/**
+	 * Returns a TableRecipe matching the required items.
+	 * @param requiredItems required items of the TableRecipe to find
+	 * @return a TableRecipe matching the required items
+	 */
+	public static TableRecipe getTableRecipe(Item[] requiredItems)
+	{
+		// function that creates a key (String[5]) from an item (TableRecipe)
+		Function<TableRecipe, String[]> keyFromItem = (recipe) -> 
+		{
+			String[] itemNames = new String[5];
+			for (int i = 0; i < 5; i++)
+			{
+				itemNames[i] = recipe.requiredItems[i] == null ? null : recipe.requiredItems[i].name;
+			}
+			return itemNames;
+		};
+		
+		// comparator that compares two keys (String[5])
+		BiFunction<String[], String[], Integer> comparator = (names0, names1) ->
+		{
+			// go through the 5 Strings and compare the pairs:
+			// 	if a pair is equal, go to the next one
+			// 	else return based on the String that is alphabetically higher
+			for (int i = 0; i < 5; i++)
+			{
+				String name0 = names0[i];
+				String name1 = names1[i];
+				if (name0 == name1)
+				{
+					continue;
+				}
+				if (name0 == null)
+				{
+					return new Integer(-1);
+				}
+				if (name1 == null)
+				{
+					return new Integer(1);
+				}
+				int stringCompareValue = name0.compareTo(name1);
+				if (stringCompareValue == 0)
+				{
+					continue;
+				}
+				return new Integer(stringCompareValue);
+			}
+			return new Integer(0);
+		};
+		
+		// create the key we're looking for from the required items
+		String[] keyToFind = new String[5];
+		for (int i = 0; i < 5; i++)
+		{
+			keyToFind[i] = requiredItems[i] == null ? null : requiredItems[i].name;
+		}
+		
+		// search the index with binary search
+		return binarySearch(comparator, keyToFind, tableRecipes, keyFromItem);
 	}
 }

@@ -331,6 +331,15 @@ public class Main {
 	}
 	
 	/**
+	 * Returns the player's inventory.
+	 * @return player's inventory
+	 */
+	public static ItemStack[] getInventory()
+	{
+		return inventory;
+	}
+	
+	/**
 	 * Shows an OptionBox specific to actions of an Item in a specified inventory slot.
 	 * @param slot number of the slot
 	 * @param width width of the window
@@ -580,21 +589,9 @@ public class Main {
 		// error to display to the user, remains null if no error occurs
 		String errorMessage = null;
 		
+		numberOfItems = StringUtils.trimZeroes(numberOfItems);
+		
 		int inputLength = numberOfItems.length();
-		
-		// remove eventual zeroes
-		int i = 0;
-		while ((i + 1) < inputLength && numberOfItems.charAt(i) == '0')
-		{
-			i++;
-		}
-		if (i != 0)
-		{
-			numberOfItems = numberOfItems.substring(i, inputLength - 1);
-		}
-		
-		// subtract the number of zeroes removed
-		inputLength -= i;
 		
 		// the player entered nothing
 		if (inputLength == 0)
@@ -676,22 +673,10 @@ public class Main {
 		// error to display to the player, if no error occurs, remains null
 		String errorMessage = null;
 		
+		times = StringUtils.trimZeroes(times);
+		
 		// length of the input the player entered
 		int inputLength = times.length();
-		
-		// remove eventual zeroes
-		int i = 0;
-		while ((i + 1) < inputLength && times.charAt(i) == '0')
-		{
-			i++;
-		}
-		if (i != 0)
-		{
-			times = times.substring(i, inputLength - 1);
-		}
-		
-		// subtract the number of zeroes removed
-		inputLength -= i;
 		
 		// the player hasn't entered anything
 		if (inputLength == 0)
@@ -709,7 +694,7 @@ public class Main {
 			int numberOfTimes = Integer.parseInt(times);
 			
 			// check if the player has enough Items
-			for (i = 0; i < recipe.requiredItems.length; i++)
+			for (int i = 0; i < recipe.requiredItems.length; i++)
 			{
 				Item currentItem = recipe.requiredItems[i];
 				
@@ -738,7 +723,7 @@ public class Main {
 			if (errorMessage == null)
 			{
 				// removed the required Items from the inventory
-				for (i = 0; i < recipe.requiredItems.length; i++)
+				for (int i = 0; i < recipe.requiredItems.length; i++)
 				{
 					Item currentItem = recipe.requiredItems[i];
 					

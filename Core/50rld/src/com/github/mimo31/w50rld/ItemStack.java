@@ -1,8 +1,11 @@
 package com.github.mimo31.w50rld;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import com.github.mimo31.w50rld.StringDraw.TextAlign;
 
 /**
  * Represents an Item with a count. Represents one slot in an inventory.
@@ -32,7 +35,7 @@ public class ItemStack {
 	 */
 	public Item getItem()
 	{
-		return this.item;
+		return this.count == 0 ? null : this.item;
 	}
 	
 	/**
@@ -74,17 +77,47 @@ public class ItemStack {
 		}
 		
 		// size of the draw square for the Item
-		int itemSize = Math.min(width, height);
+		int itemSize = Math.min(width, height - height / 3);
 		
 		// draw the Item
-		this.item.draw(g, x, y, itemSize, itemSize);
+		this.item.draw(g, x + (width - itemSize) / 2, y + (height - height / 3 - itemSize) / 2, itemSize, itemSize);
 		
 		// draw the number of Items, if not 1
 		g.setColor(Color.black);
 		if (this.count != 1)
 		{
-			Rectangle rect = new Rectangle(x, y + height * 3 / 4, width, height / 4);
-			StringDraw.drawMaxString(g, width / 16, String.valueOf(this.count), rect);
+			Rectangle rect = new Rectangle(x, y + height - height / 3, width, height / 3);
+			StringDraw.drawMaxString(g, width / 16, String.valueOf(this.count), TextAlign.MIDDLE, rect, Font.BOLD);
+		}
+	}
+	
+	/**
+	 * Draws an ItemStack with a border around it.
+	 * @param g graphics to draw through
+	 * @param x x coordinate of the rectangle to draw in
+	 * @param y y coordinate of the rectangle to draw in
+	 * @param width width of the rectangle to draw in
+ 	 * @param height height of the rectangle to draw in
+	 * @param borderColor color of the border
+	 * @param stack ItemStack to draw
+	 */
+	public static void drawWithBorder(Graphics2D g, int x, int y, int width, int height, Color borderColor, ItemStack stack)
+	{
+		// draw the background - only the border will be actually visible from it
+		g.setColor(borderColor);
+		g.fillRect(x, y, width, height);
+		
+		// width of the border
+		int borderSize = Math.min(width, height) / 12;
+		
+		// draw the background for the item
+		g.setColor(Color.white);
+		g.fillRect(x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+		
+		// draw the Stack if not null
+		if (stack != null)
+		{
+			stack.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
 		}
 	}
 }

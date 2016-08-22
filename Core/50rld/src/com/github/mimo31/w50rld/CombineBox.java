@@ -296,7 +296,12 @@ public class CombineBox extends Box {
 			this.item0Count = recipe.requiredCounts[0];
 			this.item1Count = 0;
 		}
-		else
+		else if (this.item0 == null)
+		{
+			this.item0Count = 0;
+			this.item1Count = recipe.requiredCounts[0];
+		}
+		else 
 		{
 			this.item0Count = (recipe.requiredItems[0] == this.item0) ? recipe.requiredCounts[0] : recipe.requiredCounts[1];
 			this.item1Count = (recipe.requiredItems[0] == this.item0) ? recipe.requiredCounts[1] : recipe.requiredCounts[0];

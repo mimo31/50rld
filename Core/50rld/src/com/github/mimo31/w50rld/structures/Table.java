@@ -7,6 +7,7 @@ import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Structure;
+import com.github.mimo31.w50rld.TableUIBox;
 import com.github.mimo31.w50rld.Tile;
 
 /**
@@ -20,6 +21,19 @@ public class Table extends Structure {
 	{
 		super("Table", false, new StructureAction[]
 		{
+			
+			// shows the Table interface
+			new StructureAction("Use")
+			{
+
+				@Override
+				public void action(int tileX, int tileY) {
+					Main.addBox(new TableUIBox(7 / 16f, 1 / 2f));
+				}
+				
+			},
+			
+			// removes the Table Structure and add a Table Item to the inventory
 			new StructureAction("Deconstruct")
 			{
 
