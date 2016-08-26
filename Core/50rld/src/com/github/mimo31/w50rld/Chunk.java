@@ -105,7 +105,7 @@ public class Chunk {
 				Noise[] mediumStructureNoises = ObjectsIndex.mediumStructureNoises.get(biomeNumberSelected);
 				
 				// get the noise values
-				for (int k = 0; k < mediumStructureNoises.length; k++)
+				for (int k = 0; k < mediumStructureNoiseValues.length; k++)
 				{
 					mediumStructureNoiseValues[k] = mediumStructureNoises[k].getNoise(globalXCoor, globalYCoor);
 				}
