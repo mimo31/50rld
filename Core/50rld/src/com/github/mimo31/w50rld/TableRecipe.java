@@ -84,5 +84,6 @@ public class TableRecipe {
 		Item logItem = ObjectsIndex.getItem("Log");
 		Item sticksItem = ObjectsIndex.getItem("Sticks");
 		recipes.add(new TableRecipe(new Item[] { logItem, sticksItem, null, sticksItem, logItem }, ObjectsIndex.getItem("Chest"), 1));
+		recipes.add(new TableRecipe(new Item[] { sticksItem, sticksItem, null, sticksItem, sticksItem }, ObjectsIndex.getItem("Brick Form"), 1));
 	}
 }

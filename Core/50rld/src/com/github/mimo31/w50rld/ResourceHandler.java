@@ -1,7 +1,11 @@
 package com.github.mimo31.w50rld;
 
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -111,6 +115,20 @@ public class ResourceHandler<T> {
 	}
 	
 	/**
+	 * Creates an Image compatible with the graphics device.
+	 * @param width width of the image
+	 * @param height height of the image
+	 * @return a compatible Image
+	 */
+	private static BufferedImage createCompatibleImage(int width, int height)
+	{
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	    GraphicsDevice device = env.getDefaultScreenDevice();
+	    GraphicsConfiguration config = device.getDefaultConfiguration();
+	    return config.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
+	}
+	
+	/**
 	 * Holds one BufferedImage in various sizes to avoid scaling the image multiple times.
 	 * 
 	 * @author mimo31
@@ -126,7 +144,9 @@ public class ResourceHandler<T> {
 
 		private Texture(BufferedImage original)
 		{
-			this.original = original;
+			// converts the Image to a compatible image
+			this.original = createCompatibleImage(original.getWidth(), original.getHeight());
+			this.original.getGraphics().drawImage(original, 0, 0, null);
 		}
 		
 		/**
@@ -137,6 +157,7 @@ public class ResourceHandler<T> {
 		 */
 		private BufferedImage getImage(int width)
 		{
+			
 			// check if it is the same size as the original
 			if (width == this.original.getWidth())
 			{
@@ -174,7 +195,7 @@ public class ResourceHandler<T> {
 			Image tempResize = this.original.getScaledInstance(width, newHeight, Image.SCALE_SMOOTH);
 			
 			// create a BufferedImage to put the copy in
-			BufferedImage resizedOriginal = new BufferedImage(width, newHeight, BufferedImage.TYPE_4BYTE_ABGR);
+			BufferedImage resizedOriginal = createCompatibleImage(width, newHeight);
 			
 			// create a Graphics for it to draw the scaled instance
 			Graphics2D g = resizedOriginal.createGraphics();
@@ -200,12 +221,18 @@ public class ResourceHandler<T> {
 	/**
 	 * Returns an image of the specified name from the image directory. Scales it to match the specified width.
 	 * Caches the image for speed up.
+	 * Returns null if the width is 0.
 	 * @param name name of the image file
 	 * @param width width of the image to return
-	 * @return the (possibly) scaled image
+	 * @return the (possibly) scaled image, or null if width is zero
 	 */
 	public static BufferedImage getImage(String name, int width)
 	{
+		if (width == 0)
+		{
+			return null;
+		}
+		
 		// get the texture
 		Texture texture = textures.get(name);
 		

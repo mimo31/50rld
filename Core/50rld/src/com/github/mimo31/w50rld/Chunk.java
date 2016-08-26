@@ -3,6 +3,7 @@ package com.github.mimo31.w50rld;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 /**
  * Represents a 64x64 grid of Tiles on the map.
@@ -37,8 +38,9 @@ public class Chunk {
 		this.tiles = new Tile[4096];
 		
 		// get biome noises for all biomes on all those coordinates
-		double[][] biomeNoises = new double[4096][4];
-		for (int i = 0; i < 4; i++)
+		int numberOfBiomes = ObjectsIndex.biomes.size();
+		double[][] biomeNoises = new double[4096][numberOfBiomes];
+		for (int i = 0; i < numberOfBiomes; i++)
 		{
 			biomeNoises[i] = Noise.biomeNoises[i].getNoiseRectangle(x * 64, y * 64, 64, 64);
 		}
@@ -71,9 +73,9 @@ public class Chunk {
 				double strongestBiomeNoise = 0;
 				int strongestBiomeNoiseNumber = 0;
 				double noiseSum = 0;
-				for (int k = 0; k < 4; k++)
+				for (int k = 0; k < numberOfBiomes; k++)
 				{
-					double currentBiomeNoise = biomeNoises[k][tileChunkIndex];
+					double currentBiomeNoise = biomeNoises[k][tileChunkIndex] * ObjectsIndex.biomes.get(k).occurrence;
 					noiseSum += currentBiomeNoise;
 					if (currentBiomeNoise > strongestBiomeNoise)
 					{
@@ -83,76 +85,33 @@ public class Chunk {
 				}
 				
 				// calculate biome depth
-				double depth = strongestBiomeNoise - (noiseSum - strongestBiomeNoise) / 3;
-				
-				// structures to be placed on this Tile
-				List<StructureData> structures = new ArrayList<StructureData>();
-				
-				// determine the biome of the Tile based on the strongest noise
-				switch (strongestBiomeNoiseNumber)
-				{
-					case 0:
-						// put two Water Structures
-						Structure waterStructure = ObjectsIndex.getStructure("Water");
-						structures.add(new StructureData(waterStructure));
-						structures.add(new StructureData(waterStructure));
-						break;
-					case 1:
-						// put two Dirt Structures
-						Structure dirtStructure = ObjectsIndex.getStructure("Dirt");
-						structures.add(new StructureData(dirtStructure));
-						structures.add(new StructureData(dirtStructure));
-						
-						// scale the depth to make the work with it easier
-						depth *= 3;
-						
-						// calculate the probabilities of grass or bush appearing
-						int grassP = depth > 0.5 ? 0 : (int)((1 - Math.pow(depth * 2, 1 / 3d)) * 256);
-						int bushP = depth > 0.75 ? 0 : (int)((1 - depth * 4 / 3) * 256);
-						
-						// get the small structure data
-						int strData = getSmallStructureData(globalXCoor, globalYCoor, 4) + 128;
-						
-						// decide which structure will be placed on this Tile
-						if (strData < grassP)
-						{
-							structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
-						}
-						else if (strData < bushP)
-						{
-							structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
-						}
-						else
-						{
-							structures.add(new StructureData(ObjectsIndex.getStructure("Tree")));
-						}
-						break;
-					case 2:
-						// put two Dirt Structures
-						dirtStructure = ObjectsIndex.getStructure("Dirt");
-						structures.add(new StructureData(dirtStructure));
-						structures.add(new StructureData(dirtStructure));
-						
-						// decide whether to put a Grass or a Bush
-						if (getSmallStructureData(globalXCoor, globalYCoor, 3) + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
-						{
-							structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
-						}
-						else
-						{
-							structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
-						}
-						break;
-					case 3:
-						// put two Sand Structures
-						Structure sandStructure = ObjectsIndex.getStructure("Sand");
-						structures.add(new StructureData(sandStructure));
-						structures.add(new StructureData(sandStructure));
-						break;
-				}
+				double depth = strongestBiomeNoise - (noiseSum - strongestBiomeNoise) / (numberOfBiomes - 1);
 				
 				// assign the Tile
 				this.tiles[tileChunkIndex] = new Tile(coal, iron, gold, (byte) 0);
+				
+				// create a variable that is effectively final to make it able to use it in a lambda
+				int biomeNumberSelected = strongestBiomeNoiseNumber;
+				
+				Biome selectedBiome = ObjectsIndex.biomes.get(strongestBiomeNoiseNumber);
+				
+				// function that gets small structure data by combining the biome number selected and the small structure number passed
+				Function<Byte, Byte> smallStructureFunction = b -> getSmallStructureData(globalXCoor, globalYCoor, biomeNumberSelected ^ (b.byteValue() << 24));
+				
+				// values of the biome's medium structure noises at this Tile
+				double[] mediumStructureNoiseValues = new double[selectedBiome.mediumStructuresScales.length];
+				
+				// list of the medium structure noises
+				Noise[] mediumStructureNoises = ObjectsIndex.mediumStructureNoises.get(biomeNumberSelected);
+				
+				// get the noise values
+				for (int k = 0; k < mediumStructureNoises.length; k++)
+				{
+					mediumStructureNoiseValues[k] = mediumStructureNoises[k].getNoise(globalXCoor, globalYCoor);
+				}
+				
+				// structure to be placed at this Tile
+				List<StructureData> structures = selectedBiome.getTileStructures(depth, smallStructureFunction, mediumStructureNoiseValues);
 				
 				// assign Tile's Structures
 				this.tiles[tileChunkIndex].setStructures(structures);
@@ -182,22 +141,20 @@ public class Chunk {
 	private static byte getSmallStructureData(int x, int y, int structureNumber)
 	{
 		// an array of bytes constructed from x, y and oreNumber to hash in order to obtain the ore amount
-		int[] inputBytes = new int[4 + 4 + 1];
+		int[] inputBytes = new int[4 + 4 + 4];
 		
 		// populate the array
 		for (int i = 0; i < 4; i++)
 		{
-			inputBytes[i] = (x >> (8 * i)) & 255;
+			int shift = (8 * i);
+			inputBytes[i] = (x >> shift) & 255;
+			inputBytes[4 + i] = (y >> shift) & 255;
+			inputBytes[8 + i] = (structureNumber >> shift) & 255;
 		}
-		for (int i = 0; i < 4; i++)
-		{
-			inputBytes[4 + i] = (y >> (8 * i)) & 255;
-		}
-		inputBytes[8] = structureNumber & 255;
 		
 		// get the hash from the array
 		int currentHash = hashArray[inputBytes[0]];
-		for (int i = 1; i < 9; i++)
+		for (int i = 1; i < 12; i++)
 		{
 			currentHash = hashArray[(currentHash + inputBytes[i]) & 255];
 		}

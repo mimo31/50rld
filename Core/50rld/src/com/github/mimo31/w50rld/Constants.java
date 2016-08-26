@@ -19,7 +19,7 @@ public class Constants {
 	public static final double GOLD_ORE_LIMIT = 0.65;
 	
 	// maximal possible zoom
-	public static final int MAX_ZOOM = 5;
+	public static final int MAX_ZOOM = 6;
 	
 	// number of milliseconds that will pass between the user presses an arrow key and the player starts continuously moving
 	public static final int MOVE_START_DELAY = 500;

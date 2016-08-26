@@ -21,7 +21,7 @@ public class Noise {
 	// a value to add to every coordinates to shift relative to other noises
 	final double shift;
 	
-	// noises for the four biomes: water, tree, grass, and sand respectively 
+	// noises for the biomes
 	public static Noise[] biomeNoises;
 	
 	// noises for the three ores: iron, coal, and gold respectively
@@ -61,7 +61,8 @@ public class Noise {
 	
 	/**
 	 * Returns an array of noise value at every point within the specified rectangle.
-	 * The noise value are stored left to right top to bottom.
+	 * The noise values are stored left to right top to bottom.
+	 * The noise values are form 0 to 1.
 	 * @param x the x coordinate of the top-left corner of the rectangle
 	 * @param y the y coordinate of the top-left corner of the rectangle
 	 * @param width the width of the rectangle
@@ -155,6 +156,49 @@ public class Noise {
 			
 		return noises;
 	}
+	
+	/**
+	 * Returns the noise value of at a specified location.
+	 * The noise value is from 0 to 1;
+	 * @param x x coordinate
+	 * @param y y coordinate
+	 * @return the noise value
+	 */
+	public double getNoise(int x, int y)
+	{
+		int gradX = (int)Math.floor(x / (double)this.scale + this.shift);
+		int gradY = (int)Math.floor(y / (double)this.scale + this.shift);
+		
+		// get the required gradient vectors
+		GradientVector grad0 = getGradientVector(gradX, gradY);
+		GradientVector grad1 = getGradientVector(gradX + 1, gradY);
+		GradientVector grad2 = getGradientVector(gradX, gradY + 1);
+		GradientVector grad3 = getGradientVector(gradX + 1, gradY + 1);
+		
+		// calculate the distances from the top-left gradient
+		double xDist = x / (double)this.scale + this.shift - gradX;
+		double yDist = y / (double)this.scale + this.shift - gradY;
+		
+		// calculate the dot products
+		double dot0 = xDist * grad0.dirX + yDist * grad0.dirY;
+		double dot1 = (xDist - 1) * grad1.dirX + yDist * grad1.dirY;
+		double dot2 = xDist * grad2.dirX + (yDist - 1) * grad2.dirY;
+		double dot3 = (xDist - 1) * grad3.dirX + (yDist - 1) * grad3.dirY;
+		
+		// calculate the transformed distances
+		double xTDist = 3 * Math.pow(xDist, 2) - 2 * Math.pow(xDist, 3);
+		double yTDist = 3 * Math.pow(yDist, 2) - 2 * Math.pow(yDist, 3);
+		
+		// calculate the averages on the x axes
+		double average02 = (1 - yTDist) * dot0 + yTDist * dot2;
+		double average13 = (1 - yTDist) * dot1 + yTDist * dot3;
+		
+		// calculate the average on the y axis
+		double average = (1 - xTDist) * average02 + xTDist * average13;
+		
+		return average / 2 + 0.5;
+	}
+	
 	
 	/**
 	 * Searches for and returns a GradientVector in a GradientVectors list with a location as specified.

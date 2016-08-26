@@ -3,8 +3,10 @@ package com.github.mimo31.w50rld;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,9 @@ public class Main {
 	// the map
 	public static Map map = new Map();
 	
+	// all the entities on the map
+	public static final List<EntityData> entities = new ArrayList<EntityData>();
+	
 	// the arrow keycode that is currently pressed and we are therefore moving that direction (0 in no key is pressed)
 	private static int arrowDown = 0;
 	
@@ -49,11 +54,16 @@ public class Main {
 	private static int health = 16;
 	
 	// player's inventory
-	private static ItemStack[] inventory = new ItemStack[8];
+	private static final ItemStack[] inventory = new ItemStack[8];
 	
-	// opened OptionBoxes
+	// opened Boxes
 	private static List<Box> boxes = new ArrayList<Box>();
 	
+	// players hit state
+	private static float hitState = -1;
+	
+	// whether the dead screen is shown
+	public static boolean deadScreen = false;
 	
 	public static void main(String[] args)
 	{
@@ -110,14 +120,53 @@ public class Main {
 				currentTile.paint(g, paintX, paintY, nextPaintX - paintX, nextPaintY - paintY);
 
 				// draw the player
-				if (j == playerX && i == playerY)
+				if (j == playerX && i == playerY && !deadScreen)
 				{
-					g.setColor(Color.black);
-					int playerSquareX = (paintX + nextPaintX) / 2;
-					int playerSquareY = (paintY + nextPaintY) / 2;
-					g.fillRect(playerSquareX, playerSquareY, nextPaintX - playerSquareX, nextPaintY - playerSquareY);
+					int drawX = paintX + (nextPaintX - paintX) / 4;
+					int drawY = paintY + (nextPaintY - paintY) / 4;
+					int drawSize = Math.max((nextPaintX - paintX) / 2, (nextPaintY - paintY) / 2);
+					
+					PaintUtils.drawSquareTexture(g, drawX, drawY, drawSize, drawSize, "Player.png");
+					
+					if (hitState != -1)
+					{
+						// draw the transparent red square over the player
+						g.setColor(new Color(255, 0, 0, (int)((1 - hitState) * 255)));
+						g.fillRect(drawX, drawY, drawSize, drawSize);
+					}
 				}
 			}
+		}
+		
+		// draw the entities
+		for (int i = 0, n = entities.size(); i < n; i++)
+		{
+			EntityData currentEntity = entities.get(i);
+			
+			// if the entity can be seen in the map view
+			if (currentEntity.x + 1 > mapX && currentEntity.y + 1 > mapY && currentEntity.x - 1 < mapX + mapWidth && currentEntity.y - 1 < mapY + mapHeight)
+			{
+				AffineTransform previousTransform = g.getTransform();
+				
+				// change graphics's transform to draw the entity correctly
+				g.translate((currentEntity.x - mapViewCornerX) * tileSize, (currentEntity.y - mapViewCornerY) * tileSize);
+				g.rotate(currentEntity.rotation + Math.PI / 2);
+				g.translate(-tileSize / 2, -tileSize / 2);
+				
+				currentEntity.draw(g, (int)tileSize);
+				
+				g.setTransform(previousTransform);
+			}
+		}
+		
+		// draw the dead screen
+		if (deadScreen)
+		{
+			g.setColor(new Color(255, 0, 0, 127));
+			g.fillRect(0, 0, width * 7 / 8, height);
+			
+			g.setColor(Color.black);
+			StringDraw.drawMaxString(g, "You died.", new Rectangle(width * 7 / 32, height / 4, width * 7 / 16, height / 8));
 		}
 		
 		// draw the health bar
@@ -177,6 +226,26 @@ public class Main {
 		
 		int code = e.getKeyCode();
 		int numberOfBoxes = boxes.size();
+		
+		if (deadScreen)
+		{
+			// if the dead screen is shown and the enter key is released
+			if (code == KeyEvent.VK_ENTER)
+			{
+				// hide the dead screen
+				deadScreen = false;
+				
+				// move player back to the origin
+				playerX = 0;
+				playerY = 0;
+				
+				// heal the player
+				health = Constants.MAX_HEALTH;
+			}
+			
+			// return because other actions are not allowed while the dead screen is shown
+			return;
+		}
 		
 		// if at least one Box is opened, trigger its key function or remove it if the key was Escape
 		if (numberOfBoxes != 0)
@@ -309,6 +378,37 @@ public class Main {
 				box.tryFitWindow(width, height);
 				boxes.add(box);
 				break;
+			// hit the surrounding entities
+			case KeyEvent.VK_X:
+				// hit power of the player
+				int hitPower = 1;
+				
+				// hit radius of the player
+				int hitRadius = 1;
+				
+				// for all entities: if it is in the hit radius, hit it
+				for (int i = 0, n = entities.size(); i < n; i++)
+				{
+					EntityData currentEntity = entities.get(i);
+					
+					float xDistance = currentEntity.x - playerX - 0.5f;
+					if (xDistance > hitRadius || -xDistance > hitRadius)
+					{
+						continue;
+					}
+					float yDistance = currentEntity.y - playerY - 0.5f;
+					if (yDistance > hitRadius || -yDistance > hitRadius)
+					{
+						continue;
+					}
+					
+					double distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+					if (distance < hitRadius)
+					{
+						currentEntity.hit(hitPower);
+					}
+				}
+				break;
 		}
 		
 		// check if the player wants to see the actions of an inventory slot
@@ -417,6 +517,11 @@ public class Main {
 	 */
 	public static void keyPressed(KeyEvent e)
 	{
+		// don't allow anything while the dead screen is shown
+		if (deadScreen)
+		{
+			return;
+		}
 		int code = e.getKeyCode();
 		if (arrowDown == 0 && (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN || code == KeyEvent.VK_LEFT || code == KeyEvent.VK_RIGHT))
 		{
@@ -663,6 +768,45 @@ public class Main {
 	}
 	
 	/**
+	 * Takes health points from the player.
+	 * @param hitPower the amount of health points to take from the player
+	 */
+	public static void hitPlayer(int hitPower)
+	{
+		// decrement hp
+		health -= hitPower;
+		if (health <= 0)
+		{
+			// the player died
+			health = 0;
+			deadScreen = true;
+			
+			Tile currentTile = map.getTile(playerX, playerY);
+			
+			// drop player's items on their current Tile
+			for (int i = 0; i < 8; i++)
+			{
+				if (inventory[i].getCount() != 0)
+				{
+					currentTile.addItems(inventory[i]);
+					inventory[i].setCount(0);
+				}
+			}
+			
+			// close all boxes
+			boxes.clear();
+			
+			// stop any movement
+			arrowDown = 0;
+		}
+		else
+		{
+			// reset the hit state
+			hitState = 0;
+		}
+	}
+	
+	/**
 	 * Tries to change the contents of the inventory by applying a Recipe a specified number of times.
 	 * Used primarily to accept player's combine submissions.
 	 * @param recipe the Recipe to apply
@@ -806,6 +950,27 @@ public class Main {
 		
 		// update all Tile in the update radius
 		map.updateTiles(playerX - Constants.UPDATE_RADIUS, playerY - Constants.UPDATE_RADIUS, Constants.UPDATE_RADIUS * 2, Constants.UPDATE_RADIUS * 2, delta);
+		
+		// update entities
+		for (int i = 0, n = entities.size(); i < n; i++)
+		{
+			if (entities.get(i).update(delta))
+			{
+				entities.remove(i);
+				i--;
+				n--;
+			}
+		}
+		
+		// update the hit state
+		if (hitState != -1)
+		{
+			hitState += delta / 1024d;
+			if (hitState > 1)
+			{
+				hitState = -1;
+			}
+		}
 	}
 	
 	/**
@@ -814,12 +979,6 @@ public class Main {
 	 */
 	public static void initialize() throws IOException
 	{
-		// initialize the noises for generating terrain
-		Noise.biomeNoises = new Noise[]{ new Noise(SEED + 1, Constants.BIOME_SCALE), new Noise(SEED + 2, Constants.BIOME_SCALE, 1 / 4d),
-				new Noise(SEED + 3, Constants.BIOME_SCALE, 1 / 2d), new Noise(SEED + 4, Constants.BIOME_SCALE, 3 / 4d) };
-		Noise.oreNoises = new Noise[] { new Noise(SEED + 5, Constants.ORE_SCALE), new Noise(SEED + 6, Constants.ORE_SCALE),
-				new Noise(SEED + 7, Constants.ORE_SCALE) };
-		
 		// initialize the hash array for generating small structures
 		Chunk.initializeHashArray();
 		
@@ -831,6 +990,15 @@ public class Main {
 		
 		// initialize indexes
 		ObjectsIndex.loadIndexes();
+
+		// initialize the noises for generating terrain
+		Noise.biomeNoises = new Noise[ObjectsIndex.biomes.size()];
+		for (int i = 0; i < Noise.biomeNoises.length; i++)
+		{
+			Noise.biomeNoises[i] = new Noise(SEED + (i + 1), ObjectsIndex.biomes.get(i).scale, i / (double)Noise.biomeNoises.length);
+		}
+		Noise.oreNoises = new Noise[] { new Noise(SEED + 5, Constants.ORE_SCALE), new Noise(SEED + 6, Constants.ORE_SCALE),
+				new Noise(SEED + 7, Constants.ORE_SCALE) };
 		
 		// initialize user interface
 		Gui.initializeGui();

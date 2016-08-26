@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.github.mimo31.w50rld.biomes.*;
 import com.github.mimo31.w50rld.items.*;
 import com.github.mimo31.w50rld.structures.*;
+import com.github.mimo31.w50rld.entities.*;
 
 /**
  * Holds an index of all game objects like Items and Structures. 
@@ -19,16 +21,26 @@ import com.github.mimo31.w50rld.structures.*;
 public class ObjectsIndex {
 
 	// alphabetically sorted index of all game Items 
-	private static List<Item> items = new ArrayList<Item>();
+	private final static List<Item> items = new ArrayList<Item>();
 	
 	// alphabetically sorted index of all game Structures
-	private static List<Structure> structures = new ArrayList<Structure>();
+	private final static List<Structure> structures = new ArrayList<Structure>();
 	
 	// all the recipes, not sorted
-	private static List<Recipe> recipes = new ArrayList<Recipe>();
+	private final static List<Recipe> recipes = new ArrayList<Recipe>();
 	
 	// all the table recipes sorted by the names of the required items
-	private static List<TableRecipe> tableRecipes = new ArrayList<TableRecipe>();
+	private final static List<TableRecipe> tableRecipes = new ArrayList<TableRecipe>();
+
+	// alphabetically sorted index of all game Biomes 
+	public final static List<Biome> biomes = new ArrayList<Biome>();
+	
+	// all medium structure noises sorted for Biome generation
+	// this list's n element is an array of all medium structure noises for the nth Biome (or null if the Biome has not medium structure noises)
+	public final static List<Noise[]> mediumStructureNoises = new ArrayList<Noise[]>();
+	
+	// alphabetically sorted index of all game Entities 
+	public final static List<Entity> entities = new ArrayList<Entity>();
 	
 	/**
 	 * Load all the known Items and Structures into the indexes. Should be called (only) when initializing.
@@ -38,6 +50,8 @@ public class ObjectsIndex {
 		// add all Structures
 		structures.add(new Bush());
 		structures.add(new com.github.mimo31.w50rld.structures.Chest());
+		structures.add(new com.github.mimo31.w50rld.structures.Clay());
+		structures.add(new DeathGround());
 		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new Grass());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
@@ -47,7 +61,9 @@ public class ObjectsIndex {
 		structures.add(new Water());
 		
 		// add all Items
+		items.add(new BrickForm());
 		items.add(new com.github.mimo31.w50rld.items.Chest());
+		items.add(new com.github.mimo31.w50rld.items.Clay());
 		items.add(new Coal());
 		items.add(new Cord());
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
@@ -64,7 +80,42 @@ public class ObjectsIndex {
 		items.add(new com.github.mimo31.w50rld.items.Sand());
 		items.add(new Sticks());
 		items.add(new com.github.mimo31.w50rld.items.Table());
+		items.add(new WetBrick());
 		items.add(new WoodBlend());
+		
+		// add all biomes
+		biomes.add(new Death());
+		biomes.add(new Desert());
+		biomes.add(new Forest());
+		biomes.add(new Lake());
+		biomes.add(new Plain());
+		
+		// initialize the medium structure noises
+		int noisesTotal = 0;
+		for (int i = 0, n = biomes.size(); i < n; i++)
+		{
+			Biome currentBiome = biomes.get(i);
+			if (currentBiome.mediumStructuresScales.length == 0)
+			{
+				// no medium structure noises
+				mediumStructureNoises.add(null);
+			}
+			else
+			{
+				Noise[] noises = new Noise[currentBiome.mediumStructuresScales.length];
+				for (int j = 0; j < currentBiome.mediumStructuresScales.length; j++)
+				{
+					// the seed is made to be unique - no shared by the n biomes before (+ n), not be 0 (reserved) (+ 1), 
+					// not shared by the medium structure noises of the previous biomes (+ noisesTotal), and not shared by the previous medium structure noises of the current biome (+ j)
+					noises[j] = new Noise(Main.SEED + 1 + n + noisesTotal + j, currentBiome.mediumStructuresScales[j]);
+				}
+				noisesTotal += noises.length;
+				mediumStructureNoises.add(noises);
+			}
+		}
+		
+		// add all entities
+		entities.add(new Ant());
 		
 		// add all Recipes
 		Recipe.addAllRecipes(recipes);
@@ -237,5 +288,15 @@ public class ObjectsIndex {
 		
 		// search the index with binary search
 		return binarySearch(comparator, keyToFind, tableRecipes, keyFromItem);
+	}
+	
+	/**
+	 * Returns an Entity with the corresponding name. If not found, returns null.
+	 * @param name the name of the Entity.
+	 * @return the Entity with the name or null if not found
+	 */
+	public static Entity getEntity(String name)
+	{
+		return binarySearch((s1, s2) -> s1.compareTo(s2), name, entities, entity -> entity.name);
 	}
 }
