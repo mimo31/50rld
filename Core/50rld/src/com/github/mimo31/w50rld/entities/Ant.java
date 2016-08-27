@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 
 import com.github.mimo31.w50rld.Entity;
 import com.github.mimo31.w50rld.EntityData;
+import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 
@@ -15,8 +16,8 @@ import com.github.mimo31.w50rld.PaintUtils;
 public class Ant extends Entity {
 
 	public Ant() {
-		// name "Ant", 3 hp
-		super("Ant", 3);
+		// name "Ant", 3 hp, drops 1 Dead Ant item
+		super("Ant", 3, new Item[] { ObjectsIndex.getItem("Dead Ant") }, new int[] { 1 }, new int[] { 1 });
 	}
 
 	@Override

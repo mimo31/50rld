@@ -29,6 +29,12 @@ public abstract class ApproachingEntityData extends EntityData {
 	// the minimum number of millisecond between two attacks on the player
 	private final int attackInterval;
 	
+	// the distance to move in the current random move
+	private float moveDistance;
+	
+	// whether the entity is currently randomly moving
+	private boolean moveTargetSet = false;
+	
 	public ApproachingEntityData(Entity entity, int x, int y, float speed, float detectionRange, int hitPower, int attackInterval) {
 		super(entity, x, y);
 		this.detectionRange = detectionRange;
@@ -39,34 +45,65 @@ public abstract class ApproachingEntityData extends EntityData {
 
 	@Override
 	protected void updateSub(int deltaTime) {
-		// not moving as default
-		this.moving = false;
-		
-		// return if the entity is dead or when the dead screen is shown
-		if (this.dead || Main.deadScreen)
+		if (this.dead)
 		{
+			this.moving = false;
 			return;
 		}
+		
+		// not moving as default
+		this.moving = false;
 		
 		// return if the player is out of the detection range
 		double playerXDistance = Main.playerX + 0.5 - super.x;
 		double playerYDistance = Main.playerY + 0.5 - super.y;
-		if (this.detectionRange < playerXDistance || this.detectionRange < -playerXDistance 
-				|| this.detectionRange < playerYDistance || this.detectionRange < -playerYDistance)
+		double playerDistance = Math.sqrt(Math.pow(playerXDistance, 2) + Math.pow(playerYDistance, 2));
+		if (!Main.deadScreen && playerDistance <= this.detectionRange)
 		{
-			return;
+			// rotate to the player
+			super.rotation = Math.atan2(playerYDistance, playerXDistance);
+			
+			// distance that the entity will travel limited by the distance to the player
+			double distanceToMove = Math.min(deltaTime * this.speed / 512d, playerDistance - 0.7);
+			
+			// if the distance to move is tiny, return to avoid tiny shakes
+			if (distanceToMove > 0.0001)
+			{
+				// move
+				super.x += Math.cos(super.rotation) * distanceToMove;
+				super.y += Math.sin(super.rotation) * distanceToMove;
+				
+				this.moving = true;
+			}
 		}
-		double playerDistance = Math.sqrt(Math.pow(super.x - Main.playerX - 0.5, 2) + Math.pow(super.y - Main.playerY - 0.5, 2));
-		if (playerDistance > this.detectionRange)
+		else
 		{
-			return;
+			if (this.moveTargetSet)
+			{
+				double distanceToMove = Math.min(deltaTime * this.speed / 1024d, this.moveDistance);
+				if (distanceToMove > 0.0001)
+				{
+					// move
+					super.x += Math.cos(super.rotation) * distanceToMove;
+					super.y += Math.sin(super.rotation) * distanceToMove;
+					
+					this.moveDistance -= distanceToMove;
+					
+					this.moving = true;
+				}
+				else
+				{
+					this.moving = false;
+					this.moveTargetSet = false;
+				}
+			}
+			if (Math.pow(0.9999, deltaTime * this.speed) < Math.random())
+			{
+				this.rotation = Math.random() * 2 * Math.PI;
+				this.moveDistance = (float) (Math.random() * 4);
+				this.moveTargetSet = true;
+			}
 		}
-		
-		// rotate to the player
-		super.rotation = Math.atan2(playerYDistance, playerXDistance);
-		
-		// distance that the entity will travel limited by the distance to the player
-		double distanceToMove = Math.min(deltaTime * this.speed / 512d, playerDistance - 0.7);
 		
 		// if the player is near, hit can occur
 		if (playerDistance < 1)
@@ -78,17 +115,5 @@ public abstract class ApproachingEntityData extends EntityData {
 				this.lastAttack = currentTime;
 			}
 		}
-		
-		// if the distance to move is tiny, return to avoid tiny shakes
-		if (distanceToMove < 0.0001)
-		{
-			return;
-		}
-		
-		// move
-		super.x += Math.cos(super.rotation) * distanceToMove;
-		super.y += Math.sin(super.rotation) * distanceToMove;
-		
-		this.moving = true;
 	}
 }

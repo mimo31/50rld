@@ -8,13 +8,14 @@ import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Tile;
+import com.github.mimo31.w50rld.WeaponItem;
 
 /**
- * Represents the Rock Hammer Item. The Rock Hammer is used to mine ores from the ground.
+ * Represents the Rock Hammer Item. The Rock Hammer is used to mine ores from the ground and can be used as a basic weapon.
  * @author mimo31
  *
  */
-public class RockHammer extends Item {
+public class RockHammer extends Item implements WeaponItem {
 
 	public RockHammer() {
 		super("Rock Hammer", new ItemAction[]
@@ -63,6 +64,16 @@ public class RockHammer extends Item {
 	@Override
 	public void draw(Graphics2D g, int x, int y, int width, int height) {
 		PaintUtils.drawSquareTexture(g, x, y, width, height, "RockHammer.png");
+	}
+
+	@Override
+	public float getHitPower() {
+		return 1.5f;
+	}
+
+	@Override
+	public float getHitRadius() {
+		return 2;
 	}
 	
 }

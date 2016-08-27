@@ -20,6 +20,17 @@ public class ItemStack {
 	// Item type stored
 	private Item item = null;
 	
+	public ItemStack()
+	{
+		
+	}
+	
+	public ItemStack(Item item, int count)
+	{
+		this.item = item;
+		this.count = count;
+	}
+	
 	/**
 	 * Sets the stack's item to the Item specified.
 	 * @param item the Item to set
@@ -63,11 +74,12 @@ public class ItemStack {
 	 * @param y y coordinate of the location to draw
 	 * @param width width of the rectangle to draw
 	 * @param height height of the rectangle to draw
+	 * @param background color to use for the background
 	 */
-	public void draw(Graphics2D g, int x, int y, int width, int height)
+	public void draw(Graphics2D g, int x, int y, int width, int height, Color background)
 	{
 		// fill the background with white
-		g.setColor(Color.white);
+		g.setColor(background);
 		g.fillRect(x, y, width, height);
 		
 		// if the stack contains no Items, return
@@ -117,7 +129,7 @@ public class ItemStack {
 		// draw the Stack if not null
 		if (stack != null)
 		{
-			stack.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+			stack.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize, Color.white);
 		}
 	}
 }

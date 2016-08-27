@@ -65,6 +65,12 @@ public class Main {
 	// whether the dead screen is shown
 	public static boolean deadScreen = false;
 	
+	// whether the selected inventory slot is currently being chosen
+	private static boolean selectingItem = false;
+	
+	// the selected inventory slot
+	private static int selectedItem = 0;
+	
 	public static void main(String[] args)
 	{
 		// initialize everything
@@ -204,7 +210,7 @@ public class Main {
 		{
 			int paintY = height * i / 8;
 			int nextPaintY = height * (i + 1) / 8;
-			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY - paintY);
+			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY - paintY, selectedItem == i ? new Color(191, 255, 191) : Color.white);
 		}
 		
 		// draw the boxes
@@ -226,6 +232,10 @@ public class Main {
 		
 		int code = e.getKeyCode();
 		int numberOfBoxes = boxes.size();
+
+		// copy selectingItem's value, so that the current value can be used throughout this method but the selectingItem variable is false by default
+		boolean nowSelectingItem = selectingItem;
+		selectingItem = false;
 		
 		if (deadScreen)
 		{
@@ -380,11 +390,15 @@ public class Main {
 				break;
 			// hit the surrounding entities
 			case KeyEvent.VK_X:
+				Item itemSelected = inventory[selectedItem].getItem();
+				
+				WeaponItem weapon = itemSelected instanceof WeaponItem ? (WeaponItem) itemSelected : null;
+				
 				// hit power of the player
-				int hitPower = 1;
+				float hitPower = weapon != null ? weapon.getHitPower() : 1;
 				
 				// hit radius of the player
-				int hitRadius = 1;
+				float hitRadius = weapon != null ? weapon.getHitRadius() : 1;
 				
 				// for all entities: if it is in the hit radius, hit it
 				for (int i = 0, n = entities.size(); i < n; i++)
@@ -409,6 +423,10 @@ public class Main {
 					}
 				}
 				break;
+			// start the selecting of an inventory slot
+			case KeyEvent.VK_S:
+				selectingItem = true;
+				break;
 		}
 		
 		// check if the player wants to see the actions of an inventory slot
@@ -425,8 +443,15 @@ public class Main {
 				slot = code - KeyEvent.VK_NUMPAD1;
 			}
 			
-			// show the actions
-			showItemActions(slot, width, height);
+			// select if currently selecting, else show actions
+			if (nowSelectingItem)
+			{
+				selectedItem = slot;
+			}
+			else
+			{
+				showItemActions(slot, width, height);
+			}
 		}
 	}
 	
@@ -798,6 +823,9 @@ public class Main {
 			
 			// stop any movement
 			arrowDown = 0;
+			
+			// cancel item selection
+			selectingItem = false;
 		}
 		else
 		{
@@ -954,11 +982,29 @@ public class Main {
 		// update entities
 		for (int i = 0, n = entities.size(); i < n; i++)
 		{
-			if (entities.get(i).update(delta))
+			EntityData currentEntity = entities.get(i);
+			if (currentEntity.update(delta))
 			{
 				entities.remove(i);
 				i--;
 				n--;
+				
+				// drops the drops from the entity
+				ItemStack[] drops = currentEntity.entity.getDrops();
+				if (drops.length == 0)
+				{
+					continue;
+				}
+				int dropX = (int) Math.floor(currentEntity.x);
+				int dropY = (int) Math.floor(currentEntity.y);
+				Tile dropTile = map.getTile(dropX, dropY);
+				for (int j = 0; j < drops.length; j++)
+				{
+					if (drops[j].getCount() != 0)
+					{
+						dropTile.addItems(drops[j]);
+					}
+				}
 			}
 		}
 		
