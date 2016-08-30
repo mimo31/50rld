@@ -124,5 +124,4 @@ public class InputBox extends Box {
 			this.input = this.input + String.valueOf(keyChar);
 		}
 	}
-	
 }

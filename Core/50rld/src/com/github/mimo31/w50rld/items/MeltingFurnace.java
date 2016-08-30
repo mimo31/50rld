@@ -3,6 +3,8 @@ package com.github.mimo31.w50rld.items;
 import java.awt.Graphics2D;
 
 import com.github.mimo31.w50rld.Item;
+import com.github.mimo31.w50rld.Main;
+import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 
 /**
@@ -13,7 +15,24 @@ import com.github.mimo31.w50rld.PaintUtils;
 public class MeltingFurnace extends Item {
 
 	public MeltingFurnace() {
-		super("Melting Furnace", new ItemAction[0]);
+		super("Melting Furnace", new ItemAction[]
+				{
+					new ItemAction("Construct")
+					{
+						@Override
+						public boolean actionPredicate(int tileX, int tileY)
+						{
+							return Main.map.getTile(tileX, tileY).getSmoothness() >= -1;
+						}
+						
+						@Override
+						public boolean action(int tileX, int tileY) {
+							Main.map.getTile(tileX, tileY).pushStructure(ObjectsIndex.getStructure("Melting Furnace"));
+							return true;
+						}
+						
+					}
+				});
 	}
 
 	@Override

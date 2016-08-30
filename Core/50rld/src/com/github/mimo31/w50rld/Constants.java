@@ -35,4 +35,7 @@ public class Constants {
 	
 	// half the side length of the square around the player location that is updated in updates
 	public static final int UPDATE_RADIUS = 128;
+	
+	// maximum distance from the player where new entities can't spawn
+	public static final float NO_SPAWN_DISTANCE = 8;
 }

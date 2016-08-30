@@ -353,7 +353,7 @@ public class Main {
 					// get the top structure of the Tile on which the player is currently standing on
 					Structure topStructure = currentTile.getTopStructure().structure;
 					
-					// crate arrays for options and actions of the OptionBox
+					// create arrays for options and actions of the OptionBox
 					String[] options = new String[topStructure.actions.length];
 					Runnable[] actions = new Runnable[options.length];
 					
@@ -496,9 +496,9 @@ public class Main {
 		// actions for the OptionBox
 		Runnable[] actions = new Runnable[options.length];
 		
-		options[0] = "Drop";
+		options[options.length - 1] = "Drop";
 		
-		actions[0] = () -> {
+		actions[actions.length - 1] = () -> {
 			// show an InputBox to ask the user for the amount of Items to drop
 			String request = "Enter the number of items to drop: ";
 			
@@ -517,8 +517,8 @@ public class Main {
 		for (int i = 0, n = validActions.size(); i < n; i++)
 		{
 			ItemAction currentAction = validActions.get(i);
-			options[i + 1] = currentAction.name;
-			actions[i + 1] = () -> {
+			options[i] = currentAction.name;
+			actions[i] = () -> {
 				if (currentAction.action(playerX, playerY))
 				{
 					inventory[slot].setCount(inventory[slot].getCount() - 1);

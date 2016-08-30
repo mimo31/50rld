@@ -6,9 +6,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.github.mimo31.w50rld.biomes.*;
-import com.github.mimo31.w50rld.items.*;
-import com.github.mimo31.w50rld.structures.*;
 import com.github.mimo31.w50rld.entities.*;
+import com.github.mimo31.w50rld.items.*;
+import com.github.mimo31.w50rld.metals.*;
+import com.github.mimo31.w50rld.structures.*;
 
 /**
  * Holds an index of all game objects like Items and Structures. 
@@ -31,6 +32,8 @@ public class ObjectsIndex {
 	
 	// all the table recipes sorted by the names of the required items
 	private final static List<TableRecipe> tableRecipes = new ArrayList<TableRecipe>();
+	
+	public final static List<MoltenMetalRecipe> moltenMetalRecipes = new ArrayList<MoltenMetalRecipe>();
 
 	// alphabetically sorted index of all game Biomes 
 	public final static List<Biome> biomes = new ArrayList<Biome>();
@@ -41,6 +44,8 @@ public class ObjectsIndex {
 	
 	// alphabetically sorted index of all game Entities 
 	public final static List<Entity> entities = new ArrayList<Entity>();
+	
+	public final static List<Metal> metals = new ArrayList<Metal>();
 	
 	/**
 	 * Load all the known Items and Structures into the indexes. Should be called (only) when initializing.
@@ -56,6 +61,7 @@ public class ObjectsIndex {
 		structures.add(new DriedBrick());
 		structures.add(new DryingBrick());
 		structures.add(new Grass());
+		structures.add(new com.github.mimo31.w50rld.structures.MeltingFurnace());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
 		structures.add(new SeededGrass());
 		structures.add(new com.github.mimo31.w50rld.structures.Table());
@@ -63,6 +69,7 @@ public class ObjectsIndex {
 		structures.add(new Water());
 		
 		// add all Items
+		items.add(new BladeMold());
 		items.add(new Brick());
 		items.add(new BrickForm());
 		items.add(new com.github.mimo31.w50rld.items.Chest());
@@ -80,7 +87,9 @@ public class ObjectsIndex {
 		items.add(new Grout());
 		items.add(new Hammer());
 		items.add(new Handle());
+		items.add(new IronBlade());
 		items.add(new IronOre());
+		items.add(new IronSword());
 		items.add(new Log());
 		items.add(new com.github.mimo31.w50rld.items.MeltingFurnace());
 		items.add(new Rock());
@@ -125,9 +134,14 @@ public class ObjectsIndex {
 		// add all entities
 		entities.add(new Ant());
 		
+		// add all metals
+		metals.add(new Gold());
+		metals.add(new Iron());
+		
 		// add all Recipes
 		Recipe.addAllRecipes(recipes);
 		TableRecipe.addAllRecipes(tableRecipes);
+		MoltenMetalRecipe.addAllRecipes(moltenMetalRecipes);
 	}
 	
 	/**
@@ -306,5 +320,37 @@ public class ObjectsIndex {
 	public static Entity getEntity(String name)
 	{
 		return binarySearch((s1, s2) -> s1.compareTo(s2), name, entities, entity -> entity.name);
+	}
+	
+	/**
+	 * Returns a MoltenMetalRecipe with the specified molten metal and mold item required.
+	 * @param moltenMetal molten metal required by the recipe
+	 * @param mold mold item required by the recipe
+	 * @return the MoltenMetalRecipe recipe according to the requirements or null if no such recipe is in the index
+	 */
+	public static MoltenMetalRecipe getMoltenMetalRecipe(Metal moltenMetal, Item mold)
+	{
+		// comparator of to MoltenMetalRecipes
+		BiFunction<MoltenMetalRecipe, MoltenMetalRecipe, Integer> comparator = (recipe0, recipe1) -> {
+			int moldNameComparison = recipe0.mold.name.compareTo(recipe1.mold.name);
+			if (moldNameComparison != 0)
+			{
+				return moldNameComparison;
+			}
+			return recipe0.moltenMetal.name.compareTo(recipe1.moltenMetal.name);
+		};
+		
+		// binarySerach the index
+		return binarySearch(comparator, new MoltenMetalRecipe(mold, moltenMetal, 0, null), moltenMetalRecipes, recipe -> recipe);
+	}
+	
+	/**
+	 * Returns a Metal with the specified name.
+	 * @param name name of the Metal
+	 * @return Metal with the specified name
+	 */
+	public static Metal getMetal(String name)
+	{
+		return binarySearch((s1, s2) -> s1.compareTo(s2), name, metals, metal -> metal.name);
 	}
 }

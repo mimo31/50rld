@@ -24,10 +24,8 @@ public class Sand extends Structure {
 			public void action(int tileX, int tileY) {
 				Tile tile = Main.map.getTile(tileX, tileY);
 				tile.popStructure();
-				ItemStack stack = new ItemStack();
-				stack.setItem(ObjectsIndex.getItem("Sand"));
-				stack.setCount(1);
-				tile.addInventoryItems(stack);
+				tile.addInventoryItems(new ItemStack(ObjectsIndex.getItem("Sand"), 1));
+				// tile.addInventoryItems(new ItemStack(ObjectsIndex.getItem("Melting Furnace"), 1));
 			}
 		}}, 0);
 	}

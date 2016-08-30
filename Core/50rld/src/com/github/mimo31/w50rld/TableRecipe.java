@@ -86,11 +86,13 @@ public class TableRecipe {
 		Item brickItem = ObjectsIndex.getItem("Brick");
 		Item furnaceWallItem = ObjectsIndex.getItem("Furnace Wall");
 		Item furnaceBaseItem = ObjectsIndex.getItem("Furnace Base");
+		Item rockItem = ObjectsIndex.getItem("Rock");
 
 		recipes.add(new TableRecipe(new Item[] { brickItem, brickItem, ObjectsIndex.getItem("Grout"), brickItem, brickItem }, furnaceWallItem, 1));
 		recipes.add(new TableRecipe(new Item[] { furnaceWallItem, furnaceWallItem, ObjectsIndex.getItem("Rock"), furnaceWallItem, furnaceBaseItem }, ObjectsIndex.getItem("Melting Furnace"), 1));
 		recipes.add(new TableRecipe(new Item[] { furnaceWallItem, furnaceWallItem, sticksItem, furnaceWallItem, null }, furnaceBaseItem, 1));
 		recipes.add(new TableRecipe(new Item[] { logItem, sticksItem, null, sticksItem, logItem }, ObjectsIndex.getItem("Chest"), 1));
+		recipes.add(new TableRecipe(new Item[] { rockItem, sticksItem, rockItem, sticksItem, rockItem }, ObjectsIndex.getItem("Blade Mold"), 1));
 		recipes.add(new TableRecipe(new Item[] { sticksItem, sticksItem, null, sticksItem, sticksItem }, ObjectsIndex.getItem("Brick Form"), 1));
 	}
 }

@@ -44,5 +44,6 @@ public class Recipe {
 		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Rock"), ObjectsIndex.getItem("Handle") }, new int[] { 1, 1 }, ObjectsIndex.getItem("Rock Hammer"), 1));
 		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Brick Form"), ObjectsIndex.getItem("Clay") }, new int[] { 0, 1 }, ObjectsIndex.getItem("Wet Brick"), 1));
 		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Clay"), ObjectsIndex.getItem("Gravel") }, new int[] { 2, 1 }, ObjectsIndex.getItem("Grout"), 4));
+		recipes.add(new Recipe(new Item[] { ObjectsIndex.getItem("Iron Blade"), ObjectsIndex.getItem("Handle") }, new int[] { 1, 1 }, ObjectsIndex.getItem("Iron Sword"), 1));
 	}
 }

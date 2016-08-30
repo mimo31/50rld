@@ -178,11 +178,16 @@ public class Tile {
 	}
 	
 	/**
-	 * Add Items to lie on the Tile.
+	 * Add Items to lie on the Tile. Ignores empty stacks.
 	 * @param items Items to add
 	 */
 	public void addItems(ItemStack items)
 	{
+		if (items.getCount() == 0)
+		{
+			return;
+		}
+		
 		// if items is null, create a new ArrayList
 		if (this.items == null)
 		{

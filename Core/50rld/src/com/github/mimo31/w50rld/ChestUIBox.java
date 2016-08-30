@@ -115,7 +115,7 @@ public class ChestUIBox extends Box {
 				// function to submit the number of items to move as the number to the move between inventories function
 				Consumer<String> submitFunction = (str) ->
 				{
-					tryMoveItemsBetweenInventories(Main.getInventory(), this.items, item, str);
+					InventoryUtils.tryMoveItemsBetweenInventories(Main.getInventory(), this.items, item, str);
 				};
 				
 				// ask the player how many items they want to move
@@ -166,7 +166,7 @@ public class ChestUIBox extends Box {
 					// function that submits the number of items to the move between inventories function
 					Consumer<String> submitFunction = (str) ->
 					{
-						tryMoveItemsBetweenInventories(this.items, Main.getInventory(), item, str);
+						InventoryUtils.tryMoveItemsBetweenInventories(this.items, Main.getInventory(), item, str);
 					};
 					
 					// ask the player how many items do they want to move
@@ -176,157 +176,5 @@ public class ChestUIBox extends Box {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Moves a specified number of specified Items from one inventory to another.
-	 * @param inventoryFrom inventory to move from
-	 * @param inventoryTo inventory to move to
-	 * @param item Item to move
-	 * @param count number of items to move
-	 */
-	private static void tryMoveItemsBetweenInventories(ItemStack[] inventoryFrom, ItemStack[] inventoryTo, Item item, String count)
-	{
-		// error message that will be displayed if something goes wrong
-		String errorMessage = null;
-		
-		// remove leading zeroes
-		count = StringUtils.trimZeroes(count);
-		
-		int inputLength = count.length();
-		// no input whatsoever
-		if (inputLength == 0)
-		{
-			errorMessage = "You must enter a number.";
-		}
-		// if the input it so long, so that there couldn't be that many items
-		else if (inputLength > Math.ceil(Math.log10(inventoryFrom.length * 32)))
-		{
-			errorMessage = "There isn't that many items.";
-		}
-		else
-		{
-			// the number of items to move between the inventories
-			int itemsToMove = Integer.parseInt(count);
-			
-			// the number of items available to move from the from inventory
-			int itemsAvailable = 0;
-			for (int i = 0; i < inventoryFrom.length; i++)
-			{
-				ItemStack currentSlot = inventoryFrom[i];
-				if (currentSlot.getItem() == item)
-				{
-					itemsAvailable += currentSlot.getCount();
-				}
-			}
-			
-			// no enough items available to move
-			if (itemsAvailable < itemsToMove)
-			{
-				errorMessage = "There isn't that many items.";
-			}
-			else
-			{
-				// the number of free positions in the to inventory
-				int spaceAvailable = 0;
-				
-				for (int i = 0; i < inventoryTo.length; i++)
-				{
-					ItemStack currentSlot = inventoryTo[i];
-					Item slotItem = currentSlot.getItem();
-					if (slotItem == null)
-					{
-						spaceAvailable += 32;
-					}
-					else if (slotItem == item)
-					{
-						spaceAvailable += 32 - currentSlot.getCount();
-					}
-					if (spaceAvailable >= itemsToMove)
-					{
-						break;
-					}
-				}
-				
-				// not enough space in the to inventory
-				if (spaceAvailable < itemsToMove)
-				{
-					errorMessage = "There is not enough space.";
-				}
-				else
-				{
-					// all conditions are met, move the items
-					
-					// items remaining to move
-					int remainingItems = itemsToMove;
-					
-					// take the items from the from inventory
-					for (int i = inventoryFrom.length - 1; i >= 0; i--)
-					{
-						ItemStack currentSlot = inventoryFrom[i];
-						if (currentSlot.getItem() == item)
-						{
-							int itemsInSlot = currentSlot.getCount();
-							if (itemsInSlot >= remainingItems)
-							{
-								itemsInSlot -= remainingItems;
-								currentSlot.setCount(itemsInSlot);
-								break;
-							}
-							else
-							{
-								remainingItems -= itemsInSlot;
-								currentSlot.setCount(0);
-							}
-						}
-					}
-					
-					// reset the remaining counter
-					remainingItems = itemsToMove;
-					
-					// insert the items to the to inventory
-					for (int i = 0; i < inventoryTo.length; i++)
-					{
-						ItemStack currentSlot = inventoryTo[i];
-						if (currentSlot.getItem() == item)
-						{
-							int itemsInSlot = currentSlot.getCount();
-							if (32 - itemsInSlot >= remainingItems)
-							{
-								itemsInSlot += remainingItems;
-								currentSlot.setCount(itemsInSlot);
-								break;
-							}
-							else
-							{
-								remainingItems -= 32 - itemsInSlot;
-								currentSlot.setCount(32);
-							}
-						}
-						else if (currentSlot.getCount() == 0)
-						{
-							currentSlot.setItem(item);
-							if (remainingItems < 32)
-							{
-								currentSlot.setCount(remainingItems);
-								break;
-							}
-							else
-							{
-								remainingItems -= 32;
-								currentSlot.setCount(32);
-							}
-						}
-					}
-					
-					// return to avoid displaying the (null) error message
-					return;
-				}
-			}
-		}
-		
-		// display the error message
-		InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
-		Main.addBox(box);
 	}
 }

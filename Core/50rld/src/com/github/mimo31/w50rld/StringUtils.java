@@ -1,7 +1,7 @@
 package com.github.mimo31.w50rld;
 
 /**
- * Provided methods for String manipulation.
+ * Provides methods for String manipulation.
  * @author mimo31
  *
  */
