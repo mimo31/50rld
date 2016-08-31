@@ -113,6 +113,20 @@ public class Chunk {
 				// structure to be placed at this Tile
 				List<StructureData> structures = selectedBiome.getTileStructures(depth, smallStructureFunction, mediumStructureNoiseValues);
 				
+				// check for nulls in structures
+				for (int k = 0, n = structures.size(); k < n; k++)
+				{
+					StructureData structure = structures.get(k);
+					if (structure == null)
+					{
+						throw new RuntimeException("One of the StructureData objects returned in the generation of a " + selectedBiome.name + "Biome is null.");
+					}
+					if (structure.structure == null)
+					{
+						throw new RuntimeException("One of the StructureData objects returned in the generation of a " + selectedBiome.name + "Biome has a null structure field.");
+					}
+				}
+				
 				// assign Tile's Structures
 				this.tiles[tileChunkIndex].setStructures(structures);
 			}

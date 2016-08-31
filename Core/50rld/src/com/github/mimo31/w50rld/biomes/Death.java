@@ -18,7 +18,7 @@ public class Death extends Biome {
 	public Death()
 	{
 		// one medium structure noise for Clay generation
-		super(128, new int[] { 8 }, 0.8);
+		super(128, new int[] { 8 }, 0.8, "Death");
 	}
 	
 	@Override

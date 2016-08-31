@@ -17,19 +17,20 @@ import com.github.mimo31.w50rld.StructureData;
  */
 public class Plain extends Biome {
 
+	public Plain() {
+		super("Plain");
+	}
+
 	@Override
 	public List<StructureData> getTileStructures(double biomeDepth, Function<Byte, Byte> getSmallStructureData, double[] mediumStructureNoises) {
 		List<StructureData> structures = new ArrayList<StructureData>();
 		Structure dirtStructure = ObjectsIndex.getStructure("Dirt");
 		structures.add(dirtStructure.createStructureData());
 		structures.add(dirtStructure.createStructureData());
+		structures.add(ObjectsIndex.getStructure("Grass").createStructureData());
 		if (getSmallStructureData.apply(new Byte((byte) 0)).byteValue() + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
 		{
-			structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
-		}
-		else
-		{
-			structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
+			structures.add(ObjectsIndex.getStructure("Bush").createStructureData());
 		}
 		return structures;
 	}

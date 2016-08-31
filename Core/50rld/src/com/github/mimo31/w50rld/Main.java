@@ -123,7 +123,7 @@ public class Main {
 				int nextPaintX = (int)((j + 1 - mapViewCornerX) * tileSize);
 				int nextPaintY = (int)((i + 1 - mapViewCornerY) * tileSize);
 				
-				currentTile.paint(g, paintX, paintY, nextPaintX - paintX, nextPaintY - paintY);
+				currentTile.paint(g, paintX, paintY, nextPaintX - paintX, nextPaintY - paintY, j, i);
 
 				// draw the player
 				if (j == playerX && i == playerY && !deadScreen)

@@ -27,8 +27,11 @@ public abstract class Structure {
 	 * @param y y coordinate of the location to draw
 	 * @param width width of the rectangle to draw
 	 * @param height height of the rectangle to draw
+	 * @param tileX x coordinate of the Tile to draw
+	 * @param tileY y coordinate of the Tile to draw
+	 * @param structureNumber number of the structure in the structure list of the Tile
 	 */
-	public abstract void draw(Graphics2D g, int x, int y, int width, int height);
+	public abstract void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber);
 
 	public Structure(String name, boolean overdraws, StructureAction[] actions)
 	{

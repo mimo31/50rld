@@ -53,8 +53,10 @@ public class Tile {
 	 * @param x x coordinate of the location to paint at
 	 * @param y y coordinate of the location to paint at
 	 * @param width width of the Tile to paint
+	 * @param tileX x coordinate of the Tile
+	 * @param tileY y coordinate of the Tile
 	 */
-	public void paint(Graphics2D g, int x, int y, int width, int height)
+	public void paint(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY)
 	{
 		// find out the index of the first Structure to draw at the Tile
 		// (because it is the last overdraw Structure, so it would overdraw the prior anyway
@@ -99,7 +101,7 @@ public class Tile {
 		{
 			for (int i = (firstStructureIndexToDraw == -1) ? 0 : firstStructureIndexToDraw, n = this.structures.size(); i < n; i++)
 			{
-				this.structures.get(i).structure.draw(g, x, y, width, height);
+				this.structures.get(i).structure.draw(g, x, y, width, height, tileX, tileY, i);
 			}
 		}
 		
@@ -156,11 +158,28 @@ public class Tile {
 	 */
 	public void pushStructure(Structure structure)
 	{
+		if (structure == null)
+		{
+			throw new NullPointerException("The structure passed is null.");
+		}
 		if (this.structures == null)
 		{
 			this.structures = new ArrayList<StructureData>();
 		}
 		this.structures.add(structure.createStructureData());
+	}
+	
+	/**
+	 * Adds a Structure to the top.
+	 * @param structure structure to add
+	 */
+	public void pushStructure(StructureData structure)
+	{
+		if (this.structures == null)
+		{
+			this.structures = new ArrayList<StructureData>();
+		}
+		this.structures.add(structure);
 	}
 	
 	/**
@@ -331,5 +350,56 @@ public class Tile {
 		int totalAmount = (this.gold + 128) / 8;
 		int middleDistance = Math.abs(24 - this.depth) + 1 + (this.depth < 24 ? 1 : 0);
 		return middleDistance > totalAmount ? 0 : (middleDistance + 16 > totalAmount ? 1 : 2);
+	}
+	
+	/**
+	 * Returns the structure at the specified location of the list.
+	 * @param structureNumber structure's location in the structure list
+	 * @return structure at the specified location
+	 */
+	public StructureData getStructure(int structureNumber)
+	{
+		if (structureNumber >= this.structures.size() || structureNumber < 0)
+		{
+			throw new RuntimeException("Invalid structure number.");
+		}
+		return this.structures.get(structureNumber);
+	}
+	
+	/**
+	 * Returns the number of structures at this Tile.
+	 * @return number of structures
+	 */
+	public int getStructureCount()
+	{
+		return this.structures.size();
+	}
+	
+	/**
+	 * Inserts a structure to a specified location of the structure list.
+	 * @param structure structure to insert
+	 * @param position position to insert to
+	 */
+	public void insertStructure(Structure structure, int position)
+	{
+		if (structure == null)
+		{
+			throw new NullPointerException("The structure is null.");
+		}
+		this.structures.add(position, structure.createStructureData());
+	}
+	
+	/**
+	 * Inserts a structure to a specified location of the structure list.
+	 * @param structure structure to insert
+	 * @param position position to insert to
+	 */
+	public void insertStructure(StructureData structure, int position)
+	{
+		if (structure == null)
+		{
+			throw new NullPointerException("The structure is null.");
+		}
+		this.structures.add(position, structure);
 	}
 }

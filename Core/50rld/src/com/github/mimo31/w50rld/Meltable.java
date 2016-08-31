@@ -2,7 +2,7 @@ package com.github.mimo31.w50rld;
 
 /**
  * An Interface for an Item that can be melted into a molten metal.
- * @author Viktor
+ * @author mimo31
  *
  */
 public interface Meltable {

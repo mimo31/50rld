@@ -64,6 +64,7 @@ public class ObjectsIndex {
 		structures.add(new com.github.mimo31.w50rld.structures.MeltingFurnace());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
 		structures.add(new SeededGrass());
+		structures.add(new SeededTree());
 		structures.add(new com.github.mimo31.w50rld.structures.Table());
 		structures.add(new Tree());
 		structures.add(new Water());
@@ -97,6 +98,7 @@ public class ObjectsIndex {
 		items.add(new com.github.mimo31.w50rld.items.Sand());
 		items.add(new Sticks());
 		items.add(new com.github.mimo31.w50rld.items.Table());
+		items.add(new TreeSeed());
 		items.add(new WetBrick());
 		items.add(new WoodBlend());
 		

@@ -52,7 +52,7 @@ public class MeltingFurnace extends Structure {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
+	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
 		PaintUtils.drawSquareTexture(g, x, y, width, height, "MeltingFurnaceS.png");
 	}
 

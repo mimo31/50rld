@@ -16,6 +16,10 @@ import com.github.mimo31.w50rld.StructureData;
  */
 public class Lake extends Biome {
 
+	public Lake() {
+		super("Lake");
+	}
+
 	@Override
 	public List<StructureData> getTileStructures(double biomeDepth, Function<Byte, Byte> getSmallStructureData, double[] mediumStructureNoises) {
 		List<StructureData> structures = new ArrayList<StructureData>();

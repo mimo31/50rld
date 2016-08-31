@@ -6,6 +6,7 @@ import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
+import com.github.mimo31.w50rld.Plant;
 import com.github.mimo31.w50rld.Structure;
 import com.github.mimo31.w50rld.StructureData;
 import com.github.mimo31.w50rld.Tile;
@@ -15,7 +16,7 @@ import com.github.mimo31.w50rld.Tile;
  * @author mimo31
  *
  */
-public class SeededGrass extends Structure {
+public class SeededGrass extends Structure implements Plant {
 
 	public SeededGrass() {
 		super("Seeded Grass", false, new StructureAction[] {
@@ -40,7 +41,7 @@ public class SeededGrass extends Structure {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
+	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
 		PaintUtils.drawSquareTexture(g, x, y, width, height, "SeededGrass.png");
 	}
 

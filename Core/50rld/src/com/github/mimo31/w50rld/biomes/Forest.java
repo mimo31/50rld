@@ -16,12 +16,17 @@ import com.github.mimo31.w50rld.StructureData;
  */
 public class Forest extends Biome {
 
+	public Forest() {
+		super("Forest");
+	}
+
 	@Override
 	public List<StructureData> getTileStructures(double biomeDepth, Function<Byte, Byte> getSmallStructureData, double[] mediumStructureNoises) {
 		List<StructureData> structures = new ArrayList<StructureData>();
 		Structure dirtStructure = ObjectsIndex.getStructure("Dirt");
 		structures.add(dirtStructure.createStructureData());
 		structures.add(dirtStructure.createStructureData());
+		structures.add(ObjectsIndex.getStructure("Grass").createStructureData());
 		
 		// scale the depth to make the work with it easier
 		biomeDepth *= 3;
@@ -34,17 +39,13 @@ public class Forest extends Biome {
 		int strData = getSmallStructureData.apply(new Byte((byte) 0)).byteValue() + 128;
 		
 		// decide which structure will be placed on this Tile
-		if (strData < grassP)
+		if (strData >= grassP && strData < bushP)
 		{
-			structures.add(new StructureData(ObjectsIndex.getStructure("Grass")));
-		}
-		else if (strData < bushP)
-		{
-			structures.add(new StructureData(ObjectsIndex.getStructure("Bush")));
+			structures.add(ObjectsIndex.getStructure("Bush").createStructureData());
 		}
 		else
 		{
-			structures.add(new StructureData(ObjectsIndex.getStructure("Tree")));
+			structures.add(ObjectsIndex.getStructure("Tree").createStructureData());
 		}
 		return structures;
 	}

@@ -12,6 +12,10 @@ public class StructureData {
 	
 	public StructureData(Structure structure)
 	{
+		if (structure == null)
+		{
+			throw new NullPointerException("The structure is null.");
+		}
 		this.structure = structure;
 	}
 	
