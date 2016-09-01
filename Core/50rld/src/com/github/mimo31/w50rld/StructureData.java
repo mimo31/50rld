@@ -24,8 +24,9 @@ public class StructureData {
 	 * @param tileX x coordinate of the Tile the structure is on
 	 * @param tileY y coordinate of the Tile the structure is on
 	 * @param deltaTime time difference to cover in the update
+	 * @param structureNumber the location of the structure in the list of structures at the Tile
 	 */
-	public void update(int tileX, int tileY, int deltaTime)
+	public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 	{
 		
 	}

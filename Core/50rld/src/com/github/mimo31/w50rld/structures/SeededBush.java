@@ -10,17 +10,18 @@ import com.github.mimo31.w50rld.Plant;
 import com.github.mimo31.w50rld.Structure;
 import com.github.mimo31.w50rld.StructureData;
 import com.github.mimo31.w50rld.Tile;
-import com.github.mimo31.w50rld.structures.Tree.TreeData;
+import com.github.mimo31.w50rld.structures.Bush.BushData;
 
 /**
- * Represents the Seeded Tree Structure. The Structure grows until it replaces itself with a Tree Structure.
+ * Represents the Seeded Bush Structure. The Structure grows until it replaces itself with a Bush Structure.
  * @author mimo31
  *
  */
-public class SeededTree extends Structure implements Plant {
+public class SeededBush extends Structure implements Plant {
 
-	public SeededTree() {
-		super("Seeded Tree", false, new StructureAction[] {
+	public SeededBush() {
+		super("Seeded Bush", false, new StructureAction[]
+			{
 				
 				new StructureAction("Take Out")
 				{
@@ -29,24 +30,25 @@ public class SeededTree extends Structure implements Plant {
 					public void action(int tileX, int tileY) {
 						Tile tile = Main.map.getTile(tileX, tileY);
 						tile.popStructure();
-						tile.addInventoryItems(new ItemStack(ObjectsIndex.getItem("Tree Seed"), 1));
+						tile.addInventoryItems(new ItemStack(ObjectsIndex.getItem("Bush Seed"), 1));
 					}
 					
 				}
 				
-		}, -2);
+			}, -2);
 	}
 
 	@Override
 	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
 		String textureName;
-		if (((SeededTreeData) Main.map.getTile(tileX, tileY).getStructure(structureNumber)).grown)
+		SeededBushData structure = (SeededBushData) Main.map.getTile(tileX, tileY).getStructure(structureNumber);
+		if (structure.grown)
 		{
-			textureName = "SeededTreeGrown.png";
+			textureName = "SeededBushGrown.png";
 		}
 		else
 		{
-			textureName = "SeededTree.png";
+			textureName = "SeededBush.png";
 		}
 		PaintUtils.drawSquareTexture(g, x, y, width, height, textureName);
 	}
@@ -54,44 +56,41 @@ public class SeededTree extends Structure implements Plant {
 	@Override
 	public StructureData createStructureData()
 	{
-		return new SeededTreeData();
+		return new SeededBushData();
 	}
 	
 	/**
-	 * Subclass of StructureData to handle structure data of the Seeded Tree Structure.
+	 * Subclass of DataStructure to handle the data of a Seeded Bush structure.
 	 * @author mimo31
 	 *
 	 */
-	private static class SeededTreeData extends StructureData {
+	private static class SeededBushData extends StructureData {
 
-		// whether the seed is in the grown state
-		private boolean grown = false;
-		
-		// the time the seed has been growing (when it enters the grown state, growTime is reset)
+		// the time the Bush has been growing
 		private int growTime = 0;
 		
-		public SeededTreeData() {
-			super(ObjectsIndex.getStructure("Seeded Tree"));
+		// whether it is in the bigger / grown stage
+		private boolean grown;
+		
+		public SeededBushData() {
+			super(ObjectsIndex.getStructure("Seeded Bush"));
 		}
 		
 		@Override
 		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
-			// probability that the seed will grow in this update
 			double growProbability = 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * this.growTime) * Math.pow(60000, -2));
 			
 			if (Math.random() < growProbability)
 			{
 				if (this.grown)
 				{
-					// replace the structure with a Tree structure
+					BushData bushStructure = (BushData) ObjectsIndex.getStructure("Bush").createStructureData();
+					bushStructure.grown = false;
+					
 					Tile tile = Main.map.getTile(tileX, tileY);
 					tile.popStructure();
-					TreeData treeStructure = (TreeData) ObjectsIndex.getStructure("Tree").createStructureData();
-					
-					// make the Tree not grown
-					treeStructure.grown = false;
-					tile.pushStructure(treeStructure);
+					tile.pushStructure(bushStructure);
 				}
 				else
 				{

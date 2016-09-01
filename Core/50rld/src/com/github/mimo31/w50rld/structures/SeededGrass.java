@@ -68,7 +68,7 @@ public class SeededGrass extends Structure implements Plant {
 		}
 		
 		@Override
-		public void update(int tileX, int tileY, int deltaTime)
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			// probability of the seeds growing in this update
 			// this formula is based on this expressions:

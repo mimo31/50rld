@@ -289,7 +289,7 @@ public class Tile {
 	{
 		for (int i = 0, n = this.structures.size(); i < n; i++)
 		{
-			this.structures.get(i).update(tileX, tileY, deltaTime);
+			this.structures.get(i).update(tileX, tileY, deltaTime, i);
 		}
 	}
 	

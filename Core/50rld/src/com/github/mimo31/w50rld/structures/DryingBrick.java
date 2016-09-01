@@ -61,7 +61,7 @@ public class DryingBrick extends Structure {
 		}
 		
 		@Override
-		public void update(int tileX, int tileY, int deltaTime)
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			// the probability that the brick will dry out in this update
 			// see com.github.mimo31.w50rld.structures.SeededGrass for more information

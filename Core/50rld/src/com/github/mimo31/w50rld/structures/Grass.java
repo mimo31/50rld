@@ -62,7 +62,7 @@ public class Grass extends Structure implements Plant {
 		}
 		
 		@Override
-		public void update(int tileX, int tileY, int deltaTime)
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			// randomly decide whether the grass should be spread to adjacent tiles
 			if (Math.random() < 0.0001)
@@ -89,6 +89,11 @@ public class Grass extends Structure implements Plant {
 				}
 				
 				int numberOfStructures = tile.getStructureCount();
+				
+				if (numberOfStructures == 0)
+				{
+					return;
+				}
 				
 				Structure topStructure = tile.getTopStructure().structure;
 				

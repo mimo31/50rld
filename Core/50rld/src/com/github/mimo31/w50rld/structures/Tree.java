@@ -90,7 +90,7 @@ public class Tree extends Structure implements Plant {
 		}
 		
 		@Override
-		public void update(int tileX, int tileY, int deltaTime)
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			if (!this.grown)
 			{

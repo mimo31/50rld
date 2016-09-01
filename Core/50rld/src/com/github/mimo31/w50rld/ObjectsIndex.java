@@ -33,6 +33,7 @@ public class ObjectsIndex {
 	// all the table recipes sorted by the names of the required items
 	private final static List<TableRecipe> tableRecipes = new ArrayList<TableRecipe>();
 	
+	// all the molten metal recipes sorted primarily by the mold name and secondarily by the metal name
 	public final static List<MoltenMetalRecipe> moltenMetalRecipes = new ArrayList<MoltenMetalRecipe>();
 
 	// alphabetically sorted index of all game Biomes 
@@ -45,6 +46,7 @@ public class ObjectsIndex {
 	// alphabetically sorted index of all game Entities 
 	public final static List<Entity> entities = new ArrayList<Entity>();
 	
+	// alphabetically sorted index of all game Metals
 	public final static List<Metal> metals = new ArrayList<Metal>();
 	
 	/**
@@ -63,6 +65,7 @@ public class ObjectsIndex {
 		structures.add(new Grass());
 		structures.add(new com.github.mimo31.w50rld.structures.MeltingFurnace());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
+		structures.add(new SeededBush());
 		structures.add(new SeededGrass());
 		structures.add(new SeededTree());
 		structures.add(new com.github.mimo31.w50rld.structures.Table());
@@ -73,6 +76,7 @@ public class ObjectsIndex {
 		items.add(new BladeMold());
 		items.add(new Brick());
 		items.add(new BrickForm());
+		items.add(new BushSeed());
 		items.add(new com.github.mimo31.w50rld.items.Chest());
 		items.add(new com.github.mimo31.w50rld.items.Clay());
 		items.add(new Coal());

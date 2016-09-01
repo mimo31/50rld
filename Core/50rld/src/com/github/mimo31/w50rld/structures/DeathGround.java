@@ -39,9 +39,9 @@ public class DeathGround extends Structure {
 		}
 		
 		@Override
-		public void update(int tileX, int tileY, int deltaTime)
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
-			if (Math.random() < 0.00001 && Math.sqrt(Math.pow(tileX - Main.playerX, 2) + Math.pow(tileY - Main.playerY, 2)) < Constants.NO_SPAWN_DISTANCE)
+			if (Math.random() < 0.00001 && Math.sqrt(Math.pow(tileX - Main.playerX, 2) + Math.pow(tileY - Main.playerY, 2)) >= Constants.NO_SPAWN_DISTANCE)
 			{
 				Main.entities.add(ObjectsIndex.getEntity("Ant").createEntityData(tileX, tileY));
 			}

@@ -8,6 +8,7 @@ import com.github.mimo31.w50rld.ObjectsIndex;
 import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Plant;
 import com.github.mimo31.w50rld.Structure;
+import com.github.mimo31.w50rld.StructureData;
 import com.github.mimo31.w50rld.Tile;
 
 /**
@@ -31,6 +32,7 @@ public class Bush extends Structure implements Plant {
 				blends.setCount(1 + (int) (Math.random() * 2));
 				blends.setItem(ObjectsIndex.getItem("Wood Blend"));
 				currentTile.addInventoryItems(blends);
+				currentTile.addInventoryItems(new ItemStack(ObjectsIndex.getItem("Bush Seed"), 1 + (int)(Math.random() * 2)));
 			}
 			
 		} }, -2);
@@ -39,7 +41,63 @@ public class Bush extends Structure implements Plant {
 	@Override
 	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber)
 	{
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "Bush.png");
+		String textureName;
+		
+		BushData structure = (BushData) Main.map.getTile(tileX, tileY).getStructure(structureNumber);
+		if (structure.grown)
+		{
+			textureName = "Bush.png";
+		}
+		else
+		{
+			textureName = "BushNotGrown.png";
+		}
+		
+		PaintUtils.drawSquareTexture(g, x, y, width, height, textureName);
 	}
 
+	@Override
+	public StructureData createStructureData()
+	{
+		return new BushData();
+	}
+	
+	/**
+	 * Subclass of StructureData to handle the data of a Bush structure.
+	 * @author mimo31
+	 *
+	 */
+	static class BushData extends StructureData {
+
+		// time the Bush has been growing
+		private int growTime = 0;
+		
+		// whether the Bush has already grown
+		boolean grown = true;
+		
+		public BushData() {
+			super(ObjectsIndex.getStructure("Bush"));
+		}
+
+		@Override
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
+		{
+			if (!this.grown)
+			{
+				double growProbability = 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * this.growTime) * Math.pow(60000, -2));
+				
+				if (Math.random() < growProbability)
+				{
+					this.grown = true;
+					this.growTime = 0;
+				}
+				else
+				{
+					this.growTime += deltaTime;
+				}
+			}
+		}
+		
+	}
+	
 }

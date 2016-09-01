@@ -43,7 +43,7 @@ public class Forest extends Biome {
 		{
 			structures.add(ObjectsIndex.getStructure("Bush").createStructureData());
 		}
-		else
+		else if (strData >= bushP)
 		{
 			structures.add(ObjectsIndex.getStructure("Tree").createStructureData());
 		}
