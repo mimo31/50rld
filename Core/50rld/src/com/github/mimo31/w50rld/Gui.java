@@ -83,6 +83,23 @@ public class Gui {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
+				// toggle between fullscreen and normal mode
+				if (e.getKeyCode() == KeyEvent.VK_F11)
+				{
+					frame.dispose();
+					if (frame.isUndecorated())
+					{
+						frame.setUndecorated(false);
+						frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+					}
+					else
+					{
+						frame.setUndecorated(true);
+						frame.setLocation(0, 0);
+					}
+					frame.pack();
+					frame.setVisible(true);
+				}
 				Main.keyPressed(e);
 			}
 		});
