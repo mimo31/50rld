@@ -69,6 +69,75 @@ public abstract class Item {
 	}
 	
 	/**
+	 * Represents an ItemAction where a specified Structure is placed on the Tile with some specified minimal smoothness.
+	 * @author mimo31
+	 *
+	 */
+	public static class PlaceItemAction extends ItemAction {
+		
+		// name of the Structure that will be placed
+		private final String structureName;
+		
+		// the minimal smoothness of the Tile so that the Structure can be placed
+		private final float minimalSmoothness;
+		
+		public PlaceItemAction(String name, String structureName, float minimalSmoothness)
+		{
+			super(name);
+			this.structureName = structureName;
+			this.minimalSmoothness = minimalSmoothness;
+		}
+
+		@Override
+		public boolean actionPredicate(int tileX, int tileY)
+		{
+			return Main.map.getTile(tileX, tileY).getSmoothness() >= this.minimalSmoothness;
+		}
+		
+		@Override
+		public boolean action(int tileX, int tileY)
+		{
+			Main.map.getTile(tileX, tileY).pushStructure(ObjectsIndex.getStructure(this.structureName));
+			return true;
+		}
+		
+	}
+	
+	/**
+	 * Represents an ItemAction where a specified Structure is placed on the Tile with some specified top Structure.
+	 * @author mimo31
+	 *
+	 */
+	public static class SurfacePlaceAction extends ItemAction {
+
+		// name of the Structure that will be placed
+		private final String structureName;
+		
+		// name of the Structure on which the new Structure can be placed
+		private final String structureBelowName;
+		
+		public SurfacePlaceAction(String name, String structureName, String structureBelowName)
+		{
+			super(name);
+			this.structureName = structureName;
+			this.structureBelowName = structureBelowName;
+		}
+
+		@Override
+		public boolean actionPredicate(int tileX, int tileY)
+		{
+			return Main.map.getTile(tileX, tileY).getTopStructure().structure == ObjectsIndex.getStructure(this.structureBelowName);
+		}
+		
+		@Override
+		public boolean action(int tileX, int tileY)
+		{
+			Main.map.getTile(tileX, tileY).pushStructure(ObjectsIndex.getStructure(this.structureName));
+			return true;
+		}
+	}
+	
+	/**
 	 * Draw an Item with a border around it.
 	 * @param g the graphics to draw through
 	 * @param x x coordinate to draw to
