@@ -1,22 +1,18 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 
 /**
  * Represents the Grass Seeds Item.
  * @author mimo31
  *
  */
-public class GrassSeeds extends Item {
+public class GrassSeeds extends SimplyDrawnItem {
 
 	public GrassSeeds()
 	{
-		super("Grass Seeds", new ItemAction[]
+		super("Grass Seeds", "GrassSeeds.png", new ItemAction[]
 		{
 			new ItemAction("Seed")
 			{
@@ -37,11 +33,6 @@ public class GrassSeeds extends Item {
 				
 			}
 		});
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "GrassSeeds.png");
 	}
 	
 }

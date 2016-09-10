@@ -1,10 +1,6 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.FuelItem;
-import com.github.mimo31.w50rld.Item;
-import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.WeaponItem;
 
 /**
@@ -12,17 +8,12 @@ import com.github.mimo31.w50rld.WeaponItem;
  * @author mimo31
  *
  */
-public class Sticks extends Item implements WeaponItem, FuelItem {
+public class Sticks extends SimplyDrawnItem implements WeaponItem, FuelItem {
 
 	public Sticks() {
-		super("Sticks", new ItemAction[0]);
+		super("Sticks", "Sticks.png");
 	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "Sticks.png");
-	}
-
+	
 	@Override
 	public float getHitPower() {
 		return 1;

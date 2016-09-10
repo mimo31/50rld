@@ -1,11 +1,7 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Tile;
 
 /**
@@ -13,10 +9,10 @@ import com.github.mimo31.w50rld.Tile;
  * @author mimo31
  *
  */
-public class WetBrick extends Item {
+public class WetBrick extends SimplyDrawnItem {
 
 	public WetBrick() {
-		super("Wet Brick", new ItemAction[]
+		super("Wet Brick", "WetBrick.png", new ItemAction[]
 				{
 					new ItemAction("Place")
 					{
@@ -35,11 +31,6 @@ public class WetBrick extends Item {
 						
 					}
 				});
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "WetBrick.png");
 	}
 
 }

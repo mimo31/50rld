@@ -1,9 +1,5 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
-import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.WeaponItem;
 
 /**
@@ -11,10 +7,10 @@ import com.github.mimo31.w50rld.WeaponItem;
  * @author mimo31
  *
  */
-public class IronSword extends Item implements WeaponItem {
+public class IronSword extends SimplyDrawnItem implements WeaponItem {
 
 	public IronSword() {
-		super("Iron Sword", new ItemAction[0]);
+		super("Iron Sword", "IronSword.png");
 	}
 
 	@Override
@@ -25,11 +21,6 @@ public class IronSword extends Item implements WeaponItem {
 	@Override
 	public float getHitRadius() {
 		return 3;
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "IronSword.png");
 	}
 
 }

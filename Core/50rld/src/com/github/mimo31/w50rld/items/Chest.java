@@ -1,21 +1,17 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 
 /**
  * Represents a Chest Item.
  * @author mimo31
  *
  */
-public class Chest extends Item {
+public class Chest extends SimplyDrawnItem {
 
 	public Chest() {
-		super("Chest", new ItemAction[] {
+		super("Chest", "Chest.png", new ItemAction[] {
 				
 				new ItemAction("Construct") {
 
@@ -34,11 +30,6 @@ public class Chest extends Item {
 				}
 				
 		});
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "Chest.png");
 	}
 
 }

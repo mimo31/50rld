@@ -1,22 +1,18 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 
 /**
  * Represents the Table Item.
  * @author mimo31
  *
  */
-public class Table extends Item {
+public class Table extends SimplyDrawnItem {
 
 	public Table()
 	{
-		super("Table", new ItemAction[]
+		super("Table", "TableI.png", new ItemAction[]
 		{
 			new ItemAction("Construct")
 			{
@@ -37,12 +33,5 @@ public class Table extends Item {
 			}
 		});
 	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height)
-	{
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "TableI.png");
-	}
-	
 	
 }

@@ -1,12 +1,8 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Tile;
 import com.github.mimo31.w50rld.WeaponItem;
 
@@ -15,10 +11,10 @@ import com.github.mimo31.w50rld.WeaponItem;
  * @author mimo31
  *
  */
-public class RockHammer extends Item implements WeaponItem {
+public class RockHammer extends SimplyDrawnItem implements WeaponItem {
 
 	public RockHammer() {
-		super("Rock Hammer", new ItemAction[]
+		super("Rock Hammer", "RockHammer.png", new ItemAction[]
 			{
 				new ItemAction("Mine Rock")
 						{
@@ -59,11 +55,6 @@ public class RockHammer extends Item implements WeaponItem {
 						}
 				
 			});
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "RockHammer.png");
 	}
 
 	@Override

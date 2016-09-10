@@ -1,21 +1,17 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
-import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
-import com.github.mimo31.w50rld.PaintUtils;
 
 /**
  * Represents the Tree Seed Item. The Item can be used to seed trees.
  * @author mimo31
  *
  */
-public class TreeSeed extends Item {
+public class TreeSeed extends SimplyDrawnItem {
 
 	public TreeSeed() {
-		super("Tree Seed", new ItemAction[]
+		super("Tree Seed", "TreeSeed.png", new ItemAction[]
 			{
 				new ItemAction("Seed")
 				{
@@ -34,11 +30,6 @@ public class TreeSeed extends Item {
 					
 				}
 			});
-	}
-
-	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "TreeSeed.png");
 	}
 
 }
