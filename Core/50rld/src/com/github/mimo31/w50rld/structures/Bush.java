@@ -79,6 +79,12 @@ public class Bush extends Structure implements Plant {
 			super(ObjectsIndex.getStructure("Bush"));
 		}
 
+		public BushData(boolean grown)
+		{
+			super(ObjectsIndex.getStructure("Bush"));
+			this.grown = grown;
+		}
+		
 		@Override
 		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
