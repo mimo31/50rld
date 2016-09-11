@@ -94,7 +94,7 @@ public class Tree extends Structure implements Plant {
 		{
 			if (!this.grown)
 			{
-				double growProbability = 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * this.growTime) * Math.pow(60000, -2));
+				double growProbability = Main.calculateGrowProbability(this.growTime, 60000, deltaTime);;
 				if (Math.random() < growProbability)
 				{
 					this.grown = true;

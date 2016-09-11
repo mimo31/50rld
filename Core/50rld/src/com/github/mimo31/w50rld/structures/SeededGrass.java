@@ -70,13 +70,7 @@ public class SeededGrass extends Structure implements Plant {
 		@Override
 		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
-			// probability of the seeds growing in this update
-			// this formula is based on this expressions:
-			// 	the probability that the seeds had already grown up given the time they are in the ground in ms:
-			//		P(x) = 1 - 0.5^((x / 60000)^(2))
-			//		https://www.wolframalpha.com/input/?i=plot+1+-+0.5%5E((x+%2F+60000)%5E(2))+from+x+%3D+0+to+120000
-			// the formula below is then (P(growTime + deltaTime) - P(growTime)) / (1 - P(growTime)) simplified
-			double growProbability = 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * this.growTime) * Math.pow(60000, -2));
+			double growProbability = Main.calculateGrowProbability(this.growTime, 60000, deltaTime);;
 			
 			// whether the seeds will actually grow up in this update
 			boolean grow = Math.random() < growProbability;

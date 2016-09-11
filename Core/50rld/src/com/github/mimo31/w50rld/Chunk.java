@@ -150,12 +150,12 @@ public class Chunk {
 	 * @param x the x coordinate of the location
 	 * @param y the y coordinate of the location
 	 * @param structureNumber the number of the structure
-	 * @return the amount of ore of number oerNumber that should be found at (x, y) (if any)
+	 * @return small structure data at (x, y)
 	 */
 	private static byte getSmallStructureData(int x, int y, int structureNumber)
 	{
-		// an array of bytes constructed from x, y and oreNumber to hash in order to obtain the ore amount
-		int[] inputBytes = new int[4 + 4 + 4];
+		// an array of bytes constructed from x, y, structureNumber and one more byte created by combining the other ones to hash in order to obtain the small structure data
+		int[] inputBytes = new int[4 + 4 + 4 + 1];
 		
 		// populate the array
 		for (int i = 0; i < 4; i++)
@@ -166,9 +166,14 @@ public class Chunk {
 			inputBytes[8 + i] = (structureNumber >> shift) & 255;
 		}
 		
+		// assign the 13th mixed byte
+		for (int i = 0; i < 12; i++) {
+			inputBytes[12] ^= inputBytes[i];
+		}
+		
 		// get the hash from the array
 		int currentHash = hashArray[inputBytes[0]];
-		for (int i = 1; i < 12; i++)
+		for (int i = 1; i < 13; i++)
 		{
 			currentHash = hashArray[(currentHash + inputBytes[i]) & 255];
 		}

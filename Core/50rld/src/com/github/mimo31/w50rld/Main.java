@@ -481,6 +481,24 @@ public class Main {
 		Item item = inventory[slot].getItem();
 		
 		List<ItemAction> validActions = new ArrayList<ItemAction>();
+
+		if (item instanceof Meal)
+		{
+			// add the Eat action
+			validActions.add(new ItemAction("Eat") {
+
+				@Override
+				public boolean action(int tileX, int tileY) {
+					health += ((Meal) item).healthGain();
+					if (health > Constants.MAX_HEALTH)
+					{
+						health = Constants.MAX_HEALTH;
+					}
+					return true;
+				}
+					
+			});
+		}
 		
 		for (int i = 0; i < item.actions.length; i++)
 		{
@@ -945,6 +963,17 @@ public class Main {
 		box.tryFitWindow(windowSize.width, windowSize.height);
 		
 		boxes.add(box);
+	}
+	
+	public static double calculateGrowProbability(int growTime, int growTimeFactor, int deltaTime)
+	{
+		// probability of something growing in the time interval
+		// this formula is based on this expression:
+		// 	the probability that the seeds had already grown up given the time they are in the ground in ms:
+		//		P(x) = 1 - 0.5^((x / 60000)^(2))
+		//		https://www.wolframalpha.com/input/?i=plot+1+-+0.5%5E((x+%2F+60000)%5E(2))+from+x+%3D+0+to+120000
+		// the formula below is then (P(growTime + deltaTime) - P(growTime)) / (1 - P(growTime)) simplified
+		return 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * growTime) * Math.pow(growTimeFactor, -2));
 	}
 	
 	/**

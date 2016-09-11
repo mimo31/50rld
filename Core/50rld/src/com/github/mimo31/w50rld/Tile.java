@@ -402,4 +402,17 @@ public class Tile {
 		}
 		this.structures.add(position, structure);
 	}
+	
+	/**
+	 * Removes a structure at a specified position.
+	 * @param position of the structure to remove
+	 */
+	public void removeStructure(int position)
+	{
+		if (this.structures.size() <= position)
+		{
+			throw new IndexOutOfBoundsException("There are only " + String.valueOf(this.structures.size()) + " structures, so there is no structure at position " + String.valueOf(position) + ".");
+		}
+		this.structures.remove(position);
+	}
 }

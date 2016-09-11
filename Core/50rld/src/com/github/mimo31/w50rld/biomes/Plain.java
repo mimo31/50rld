@@ -11,7 +11,7 @@ import com.github.mimo31.w50rld.Structure;
 import com.github.mimo31.w50rld.StructureData;
 
 /**
- * Represents the Plain Biome - each Tile contains two Dirt Structures and a Grass or a Bush.
+ * Represents the Plain Biome - each Tile contains two Dirt Structures, Grass and a Bush or a vegetable plant.
  * @author mimo31
  *
  */
@@ -31,6 +31,16 @@ public class Plain extends Biome {
 		if (getSmallStructureData.apply(new Byte((byte) 0)).byteValue() + 128 < Constants.BUSH_IN_GRASS_PROB * 256)
 		{
 			structures.add(ObjectsIndex.getStructure("Bush").createStructureData());
+		}
+		else if (getSmallStructureData.apply((byte)1) == -128 && getSmallStructureData.apply((byte)2) < -120)
+		{
+			// place Carrots
+			structures.add(ObjectsIndex.getStructure("Carrots").createStructureData());
+		}
+		else if (getSmallStructureData.apply((byte)3) == -128 && getSmallStructureData.apply((byte)4) < -120)
+		{
+			// place Corn
+			structures.add(ObjectsIndex.getStructure("Corn").createStructureData());
 		}
 		return structures;
 	}

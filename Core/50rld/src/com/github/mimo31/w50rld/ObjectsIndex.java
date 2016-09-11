@@ -56,8 +56,10 @@ public class ObjectsIndex {
 	{
 		// add all Structures
 		structures.add(new Bush());
+		structures.add(new Carrots());
 		structures.add(new com.github.mimo31.w50rld.structures.Chest());
 		structures.add(new com.github.mimo31.w50rld.structures.Clay());
+		structures.add(new com.github.mimo31.w50rld.structures.Corn());
 		structures.add(new DeathGround());
 		structures.add(new com.github.mimo31.w50rld.structures.Dirt());
 		structures.add(new DriedBrick());
@@ -66,6 +68,8 @@ public class ObjectsIndex {
 		structures.add(new com.github.mimo31.w50rld.structures.MeltingFurnace());
 		structures.add(new com.github.mimo31.w50rld.structures.Sand());
 		structures.add(new SeededBush());
+		structures.add(new SeededCarrots());
+		structures.add(new SeededCorn());
 		structures.add(new SeededGrass());
 		structures.add(new SeededTree());
 		structures.add(new com.github.mimo31.w50rld.structures.Table());
@@ -77,10 +81,14 @@ public class ObjectsIndex {
 		items.add(new Brick());
 		items.add(new BrickForm());
 		items.add(new BushSeed());
+		items.add(new Carrot());
+		items.add(new CarrotSeeds());
 		items.add(new com.github.mimo31.w50rld.items.Chest());
 		items.add(new com.github.mimo31.w50rld.items.Clay());
 		items.add(new Coal());
 		items.add(new Cord());
+		items.add(new com.github.mimo31.w50rld.items.Corn());
+		items.add(new CornSeeds());
 		items.add(new DeadAnt());
 		items.add(new com.github.mimo31.w50rld.items.Dirt());
 		items.add(new FurnaceBase());

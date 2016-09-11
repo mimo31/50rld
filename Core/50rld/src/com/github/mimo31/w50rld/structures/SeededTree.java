@@ -78,7 +78,7 @@ public class SeededTree extends Structure implements Plant {
 		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			// probability that the seed will grow in this update
-			double growProbability = 1 - Math.pow(0.5, deltaTime * (deltaTime + 2 * this.growTime) * Math.pow(60000, -2));
+			double growProbability = Main.calculateGrowProbability(this.growTime, 60000, deltaTime);;
 			
 			if (Math.random() < growProbability)
 			{
