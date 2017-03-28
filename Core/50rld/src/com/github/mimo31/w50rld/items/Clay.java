@@ -8,6 +8,6 @@ package com.github.mimo31.w50rld.items;
 public class Clay extends SimplyDrawnItem {
 
 	public Clay() {
-		super("Clay", "ClayI.png", new ItemAction[] { new PlaceItemAction("Place", "Clay", 0) } );
+		super("Clay", "ClayI", new ItemAction[] { new PlaceItemAction("Place", "Clay", 0) } );
 	}
 }

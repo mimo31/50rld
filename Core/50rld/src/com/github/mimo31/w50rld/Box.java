@@ -1,19 +1,27 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.Point;
 
 /**
  * Represents a Box on the screen.
- * Can handle mouseClicked and key events.
+ * Can handle mouseClicked and keyReleased events.
  * Contains a function that draws the box.
  * @author mimo31
  *
  */
 public abstract class Box {
 
+	/**
+	 * Distinguishes between the 4 corners of a Box.
+	 * Used to select the corner for the align function.
+	 * @author mimo31
+	 *
+	 */
+	public enum CornerAlign
+	{
+		TOPLEFT, TOPRIGHT, BOTTOMRIGHT, BOTTOMLEFT
+	}
+	
 	// the x coordinate of the box divided by the width of the window
 	protected float x;
 
@@ -22,34 +30,37 @@ public abstract class Box {
 	
 	/**
 	 * Handler for mouse clicks.
-	 * @param event mouseEvent
+	 * @param location the cursor position relative to the content pane at the moment of the click
 	 * @param removeAction action that can be run when it's decided to remove the box
-	 * @param width width of the window
-	 * @param height height of the window
 	 * @return whether the box was clicked
 	 */
-	public boolean mouseClicked(MouseEvent event, Runnable removeAction, int width, int height)
+	public boolean mouseClicked(Point location, Runnable removeAction)
 	{
-		return false;
+		// check if the click location was inside the Box
+		
+		float clickX = location.x * 2f / Gui.width - 1;
+		float clickY = 1 - location.y * 2f / Gui.height;
+		
+		float width = this.getWidth();
+		float height = this.getHeight();
+		
+		return this.x <= clickX && this.y <= clickY && clickX < this.x + width && clickY < this.y + height;
 	}
 	
 	/**
 	 * Handler for key events.
-	 * @param event KeyEvent
+	 * @param keycode the GLFW code of the pressed key
 	 * @param removeAction action that can be run when it's decided to remove the box
 	 */
-	public void key(KeyEvent event, Runnable removeAction)
+	public void keyReleased(int keycode, Runnable removeAction)
 	{
 		
 	}
 	
 	/**
-	 * Draw the Box.
-	 * @param g graphics to draw through.
-	 * @param width width of the window
-	 * @param height height of the window
+	 * Draws the Box.
 	 */
-	public abstract void draw(Graphics2D g, int width, int height);
+	public abstract void draw();
 	
 	public Box(float x, float y)
 	{
@@ -58,57 +69,63 @@ public abstract class Box {
 	}
 	
 	/**
-	 * Returns the size of the Box.
-	 * @param width width of the window
-	 * @param height height of the window
-	 * @return size of the Box
+	 * Moves the Box from the BOTTOMLEFT align to a different align.
+	 * Should be called after the constructor is finished.
+	 * @param align
 	 */
-	protected abstract Dimension getSize(int width, int height);
+	protected void align(CornerAlign align)
+	{
+		if (align == CornerAlign.TOPLEFT || align == CornerAlign.TOPRIGHT)
+		{
+			this.y -= this.getHeight();
+		}
+		if (align == CornerAlign.TOPRIGHT || align == CornerAlign.BOTTOMRIGHT)
+		{
+			this.x -= this.getWidth();
+		}
+	}
+	
+	/**
+	 * @return width of the Box in canvas width
+	 */
+	protected abstract float getWidth();
+	
+	/**
+	 * @return height of the Box in canvas height
+	 */
+	protected abstract float getHeight();
 	
 	/**
 	 * Tries to change Box's location, so that it's whole in the window.
-	 * @param width width of the window
-	 * @param height height of the window
 	 * @return whether the location was successfully changed, so that it's whole in the window
 	 */
-	public boolean tryFitWindow(int width, int height)
+	public boolean tryFitWindow()
 	{
-		int locX = (int) (this.x * width);
-		int locY = (int) (this.y * height);
-		
-		Dimension boxSize = this.getSize(width, height);
+		float width = this.getWidth();
+		float height = this.getHeight();
 		
 		boolean fitted = true;
 		
 		// if it exceeds the width of the window, move it, so that it only touches the right edge
-		if (locX + boxSize.width > width)
+		if (this.x + width > 1)
 		{
-			locX = width - boxSize.width;
-			if (locX < 0)
+			this.x = 1 - width;
+			if (this.x < -1)
 			{
 				// it now exceeds the left edge, so it's impossible to fit
 				fitted = false;
 				this.x = 0;
 			}
-			else
-			{
-				this.x = locX / (float) width;
-			}
 		}
 		
 		// if the exceeds the height of the window, move it, so that it only touches the bottom edge
-		if (locY + boxSize.height > height)
+		if (this.y + height > 1)
 		{
-			locY = height - boxSize.height;
-			if (locY < 0)
+			this.y = 1 - height;
+			if (this.y < -1)
 			{
 				// it now exceeds the top edge, so it's impossible to fit
 				fitted = false;
-				this.y = 0;
-			}
-			else
-			{
-				this.y = locY / (float) height;
 			}
 		}
 		

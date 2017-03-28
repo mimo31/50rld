@@ -11,7 +11,7 @@ import com.github.mimo31.w50rld.structures.Tree.TreeData;
 public class SeededTree extends SeededPlantStructure {
 
 	public SeededTree() {
-		super("Seeded Tree", "SeededTree.png", "SeededTreeGrown.png", 60000, "Tree Seed");
+		super("Seeded Tree", "SeededTree", "SeededTreeGrown", 60000, "Tree Seed");
 	}
 
 	@Override

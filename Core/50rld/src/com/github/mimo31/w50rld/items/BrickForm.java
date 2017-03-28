@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class BrickForm extends SimplyDrawnItem {
 
 	public BrickForm() {
-		super("Brick Form", "BrickForm.png");
+		super("Brick Form", "BrickForm");
 	}
 
 }

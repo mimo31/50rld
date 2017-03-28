@@ -1,7 +1,7 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import static org.lwjgl.opengl.GL11.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,15 +48,15 @@ public class Tile {
 	}
 	
 	/**
-	 * Paints the Tile through the specified Graphics2D on a location at (x, y) with a specified width and height.
-	 * @param g graphics to paint
-	 * @param x x coordinate of the location to paint at
-	 * @param y y coordinate of the location to paint at
-	 * @param width width of the Tile to paint
+	 * Paints the Tile through current OpenGL context on a in the specified location.
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 * @param tileX x coordinate of the Tile
 	 * @param tileY y coordinate of the Tile
 	 */
-	public void paint(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY)
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY)
 	{
 		// find out the index of the first Structure to draw at the Tile
 		// (because it is the last overdraw Structure, so it would overdraw the prior anyway
@@ -76,22 +76,22 @@ public class Tile {
 		if (firstStructureIndexToDraw == -1)
 		{
 			// no Structure is declared overdraw, so draw the underlying rock or end
-			PaintUtils.drawSquareTexture(g, x, y, width, height, this.depth == 32 ? "End.png" : "RockS.png");
+			PaintUtils.drawTexture(startx, starty, endx, endy, this.depth == 32 ? "End" : "RockS");
 			
 			// draw the ores if present
 			if (this.depth != 32)
 			{
 				if (this.getIronAmount() != 0)
 				{
-					PaintUtils.drawSquareTexture(g, x, y, width, height, "IronOreS.png");
+					PaintUtils.drawTexture(startx, starty, endx, endy, "IronOreS");
 				}
 				if (this.getCoalAmount() != 0)
 				{
-					PaintUtils.drawSquareTexture(g, x, y, width, height, "CoalS.png");
+					PaintUtils.drawTexture(startx, starty, endx, endy, "CoalS");
 				}
 				if (this.getGoldAmount() != 0)
 				{
-					PaintUtils.drawSquareTexture(g, x, y, width, height, "GoldOreS.png");
+					PaintUtils.drawTexture(startx, starty, endx, endy, "GoldOreS");
 				}
 			}
 		}
@@ -101,15 +101,15 @@ public class Tile {
 		{
 			for (int i = (firstStructureIndexToDraw == -1) ? 0 : firstStructureIndexToDraw, n = this.structures.size(); i < n; i++)
 			{
-				this.structures.get(i).structure.draw(g, x, y, width, height, tileX, tileY, i);
+				this.structures.get(i).structure.draw(startx, starty, endx, endy, tileX, tileY, i);
 			}
 		}
 		
 		// draw items icon
 		if (this.items != null && !this.items.isEmpty())
 		{
-			g.setColor(Color.red);
-			g.fillRect(x, y, width / 4, height / 4);
+			glColor3f(1, 0, 0);
+			PaintUtils.drawRectangle(startx, starty, (endx - startx) / 4, (endy - starty) / 4);
 		}
 	}
 	

@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class BladeMold extends SimplyDrawnItem {
 
 	public BladeMold() {
-		super("Blade Mold", "BladeMold.png");
+		super("Blade Mold", "BladeMold");
 	}
 
 }

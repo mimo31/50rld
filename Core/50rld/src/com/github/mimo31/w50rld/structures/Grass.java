@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.structures;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
@@ -38,9 +36,9 @@ public class Grass extends Structure implements Plant {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber)
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber)
 	{
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "Grass.png");
+		PaintUtils.drawTexture(startx, starty, endx, endy, "Grass");
 	}
 	
 	@Override

@@ -11,7 +11,7 @@ public class Log extends SimplyDrawnItem implements FuelItem {
 
 	public Log()
 	{
-		super("Log", "Log.png");
+		super("Log", "Log");
 	}
 
 	@Override

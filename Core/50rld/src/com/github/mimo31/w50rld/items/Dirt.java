@@ -9,7 +9,7 @@ public class Dirt extends SimplyDrawnItem {
 
 	public Dirt()
 	{
-		super("Dirt", "DirtI.png", new ItemAction[]{ new PlaceItemAction("Place", "Dirt", 0) });
+		super("Dirt", "DirtI", new ItemAction[]{ new PlaceItemAction("Place", "Dirt", 0) });
 	}
 
 }

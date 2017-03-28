@@ -9,7 +9,7 @@ public class WoodBlend extends SimplyDrawnItem {
 
 	public WoodBlend()
 	{
-		super("Wood Blend", "WoodBlend.png");
+		super("Wood Blend", "WoodBlend");
 	}
 
 }

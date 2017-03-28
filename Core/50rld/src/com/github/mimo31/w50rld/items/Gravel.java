@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class Gravel extends SimplyDrawnItem {
 
 	public Gravel() {
-		super("Gravel", "Gravel.png");
+		super("Gravel", "Gravel");
 	}
 	
 }

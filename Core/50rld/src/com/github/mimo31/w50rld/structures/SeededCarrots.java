@@ -12,7 +12,7 @@ public class SeededCarrots extends SeededPlantStructure {
 
 	public SeededCarrots()
 	{
-		super("Seeded Carrots", "SeededCarrots.png", "SeededCarrotsGrown.png", 60000, "Carrot Seeds");
+		super("Seeded Carrots", "SeededCarrots", "SeededCarrotsGrown", 60000, "Carrot Seeds");
 	}
 
 	@Override

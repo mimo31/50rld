@@ -11,7 +11,7 @@ import com.github.mimo31.w50rld.WeaponItem;
 public class Sticks extends SimplyDrawnItem implements WeaponItem, FuelItem {
 
 	public Sticks() {
-		super("Sticks", "Sticks.png");
+		super("Sticks", "Sticks");
 	}
 	
 	@Override

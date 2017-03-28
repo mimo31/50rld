@@ -9,7 +9,7 @@ public class Sand extends SimplyDrawnItem {
 
 	public Sand()
 	{
-		super("Sand", "SandI.png", new ItemAction[]{ new PlaceItemAction("Place", "Sand", 0) } );
+		super("Sand", "SandI", new ItemAction[]{ new PlaceItemAction("Place", "Sand", 0) } );
 	}
 
 }

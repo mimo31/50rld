@@ -9,7 +9,7 @@ public class GrassSeeds extends SimplyDrawnItem {
 
 	public GrassSeeds()
 	{
-		super("Grass Seeds", "GrassSeeds.png", new ItemAction[] { new SurfacePlaceAction("Seed", "Seeded Grass", "Dirt") });
+		super("Grass Seeds", "GrassSeeds", new ItemAction[] { new SurfacePlaceAction("Seed", "Seeded Grass", "Dirt") });
 	}
 	
 }

@@ -11,7 +11,7 @@ import com.github.mimo31.w50rld.structures.Corn.CornData;
 public class SeededCorn extends SeededPlantStructure {
 
 	public SeededCorn() {
-		super("Seeded Corn", "SeededCorn.png", "SeededCornGrown.png", 60000, "Corn Seeds");
+		super("Seeded Corn", "SeededCorn", "SeededCornGrown", 60000, "Corn Seeds");
 	}
 
 	@Override

@@ -1,7 +1,8 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.opengl.GL11.*;
+
 import java.awt.Color;
-import java.awt.Graphics2D;
 
 /**
  * Represents an Item in some kind of inventory. Its subclasses are intended to only be instantiated once during the game - when loading indexes.
@@ -18,13 +19,12 @@ public abstract class Item {
 	
 	/**
 	 * Draws the Item.
-	 * @param g graphics to draw through
-	 * @param x x coordinate of the location to draw
-	 * @param y y coordinate of the location to draw
-	 * @param width width of the rectangle to draw
-	 * @param height height of the rectangle to draw
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 */
-	public abstract void draw(Graphics2D g, int x, int y, int width, int height);
+	public abstract void draw(float startx, float starty, float endx, float endy);
 
 	public Item(String name, ItemAction[] actions)
 	{
@@ -138,33 +138,56 @@ public abstract class Item {
 	}
 	
 	/**
-	 * Draw an Item with a border around it.
-	 * @param g the graphics to draw through
-	 * @param x x coordinate to draw to
-	 * @param y y coordinate to draw to
-	 * @param width width of the rectangle to draw to
-	 * @param height height of the rectangle to draw to
+	 * Draws an Item with a border around it.
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 * @param borderColor color of the border
 	 * @param item Item to draw
 	 */
-	public static void drawWithBorder(Graphics2D g, int x, int y, int width, int height, Color borderColor, Item item)
+	public static void drawWithBorder(float startx, float starty, float endx, float endy, Color borderColor, Item item)
 	{
 		// draw the background - only the border will be actually visible from it
-		g.setColor(borderColor);
-		g.fillRect(x, y, width, height);
+		PaintUtils.setDrawColor(borderColor);
+		PaintUtils.drawRectangleP(startx, starty, endx, endy);
 		
-		// width of the border
-		int borderSize = Math.min(width, height) / 12;
+		// canvas sizes of the whole item including the border
+		float width = endx - startx;
+		float height = endy - starty;
 		
-		// draw the background for the item
-		g.setColor(Color.white);
-		g.fillRect(x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+		// screen width of the border 
+		float borderSize = Math.min(width * Gui.width / 2, height * Gui.height / 2) / 12;
 		
-		// draw the Item if not null
+		// coordinates of the item inside the border
+		float itemx1 = startx + borderSize / Gui.width * 2;
+		float itemy1 = starty + borderSize / Gui.height * 2;
+		float itemx2 = endx - borderSize / Gui.width * 2;
+		float itemy2 = endy - borderSize / Gui.height * 2;
+
+		// draw just a white background
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangleP(itemx1, itemy1, itemx2, itemy2);
+		
+		// draw the item if not null
 		if (item != null)
 		{
-			item.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+			item.draw(itemx1, itemy1, itemx2, itemy2);
 		}
+	}
+	
+	/**
+	 * Draws an Item with a border around it.
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param width rectangle width in canvas width
+	 * @param height rectangle height in canvas height
+	 * @param borderColor color of the border
+	 * @param item Item to draw
+	 */
+	public static void drawWithBorderS(float startx, float starty, float width, float height, Color borderColor, Item item)
+	{
+		drawWithBorder(startx, starty, startx + width, starty + height, borderColor, item);
 	}
 }
 

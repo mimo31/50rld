@@ -11,7 +11,7 @@ public class Hammer extends SimplyDrawnItem implements WeaponItem {
 
 	public Hammer()
 	{
-		super("Hammer", "Hammer.png");
+		super("Hammer", "Hammer");
 	}
 
 	@Override

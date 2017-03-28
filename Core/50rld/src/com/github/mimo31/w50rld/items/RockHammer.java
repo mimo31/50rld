@@ -14,7 +14,7 @@ import com.github.mimo31.w50rld.WeaponItem;
 public class RockHammer extends SimplyDrawnItem implements WeaponItem {
 
 	public RockHammer() {
-		super("Rock Hammer", "RockHammer.png", new ItemAction[]
+		super("Rock Hammer", "RockHammer", new ItemAction[]
 			{
 				new ItemAction("Mine Rock")
 						{

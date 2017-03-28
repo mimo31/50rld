@@ -10,7 +10,7 @@ public class Cord extends SimplyDrawnItem {
 
 	public Cord()
 	{
-		super("Cord", "Cord.png");
+		super("Cord", "Cord");
 	}
 	
 }

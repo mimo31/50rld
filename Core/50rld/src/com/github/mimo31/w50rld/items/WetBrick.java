@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class WetBrick extends SimplyDrawnItem {
 
 	public WetBrick() {
-		super("Wet Brick", "WetBrick.png", new ItemAction[] { new PlaceItemAction("Place", "Drying Brick", -1) });
+		super("Wet Brick", "WetBrick", new ItemAction[] { new PlaceItemAction("Place", "Drying Brick", -1) });
 	}
 
 }

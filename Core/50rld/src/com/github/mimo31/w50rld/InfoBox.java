@@ -1,11 +1,11 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Represents a Box with text.
@@ -23,79 +23,59 @@ public class InfoBox extends Box {
 	 * @param y the y location of the Box
 	 * @param text
 	 */
-	public InfoBox(float x, float y, String text) {
+	public InfoBox(float x, float y, String text, CornerAlign align) {
 		super(x, y);
 		this.text = text;
+		super.align(align);
 	}
 
 	@Override
-	public void draw(Graphics2D g, int width, int height) {
-		int locX = (int) (super.x * width);
-		int locY = (int) (super.y * height);
+	public void draw()
+	{
+		// box with a 6 x 1 tile grid
+
+		float contentWidth = 6 * Constants.BOX_TILE_SIZE;
+				
+		float boxWidth = 2 * Constants.BOX_BORDER_SIZE + contentWidth;
 		
-		int boxWidth = width / 6;
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
 		
-		int borderSize = boxWidth / 64;
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
 		
-		int boxHeight = boxWidth / 6 + borderSize * 2;
+		float boxHeight = 2 * borderHeight + tileHeight;
 		
 		// draw the background
-		g.setColor(Color.magenta);
-		g.fillRect(locX, locY, boxWidth, boxHeight);
+		PaintUtils.setDrawColor(Color.magenta);
+		PaintUtils.drawRectangle(this.x, this.y, boxWidth, boxHeight);
 		
-		int contentX = locX + borderSize;
-		int contentY = locY + borderSize;
-		
-		int contentWidth = boxWidth - 2 * borderSize;
-		int contentHeight = boxHeight - 2 * borderSize;
-		
-		Rectangle textRectangle = new Rectangle(contentX, contentY, contentWidth, contentHeight);
+		float contentX = this.x + Constants.BOX_BORDER_SIZE;
+		float contentY = this.y + borderHeight;
 		
 		// draw the message background
-		g.setColor(Color.white);
-		g.fill(textRectangle);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(contentX, contentY, contentWidth, tileHeight);
 		
 		// draw the message text
-		g.setColor(Color.black);
-		StringDraw.drawMaxString(g, borderSize * 2, this.text, textRectangle);
+		TextDraw.drawText(this.text, contentX, contentY, contentWidth, tileHeight, TextAlign.MIDDLE, Constants.BOX_BORDER_SIZE);
 	}
 	
 	@Override
-	public boolean mouseClicked(MouseEvent event, Runnable removeAction, int width, int height)
+	protected float getWidth()
 	{
-		int locX = (int) (super.x * width);
-		int locY = (int) (super.y * height);
-		
-		int boxWidth = width / 6;
-		
-		int borderSize = boxWidth / 64;
-		
-		int boxHeight = boxWidth / 6 + borderSize * 2;
-		
-		int clickX = event.getX();
-		int clickY = event.getY();
-		
-		// return whether the click was inside the Box
-		return clickX >= locX && clickY >= locY && clickX < locX + boxWidth && clickY < locY + boxHeight;
+		return 2 * Constants.BOX_BORDER_SIZE + 6 * Constants.BOX_TILE_SIZE;
 	}
 	
 	@Override
-	protected Dimension getSize(int width, int height)
+	protected float getHeight()
 	{
-		int boxWidth = width / 6;
-		
-		int borderSize = boxWidth / 64;
-		
-		int boxHeight = boxWidth / 6 + borderSize * 2;
-		
-		return new Dimension(boxWidth, boxHeight);
+		return (2 * Constants.BOX_BORDER_SIZE + Constants.BOX_TILE_SIZE) * Gui.width / Gui.height;
 	}
 	
 	@Override
-	public void key(KeyEvent event, Runnable closeAction)
+	public void keyReleased(int keyCode, Runnable closeAction)
 	{
 		// close if enter was pressed
-		if (event.getKeyCode() == KeyEvent.VK_ENTER)
+		if (keyCode == GLFW_KEY_ENTER || keyCode == GLFW_KEY_KP_ENTER)
 		{
 			closeAction.run();
 		}

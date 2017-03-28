@@ -1,11 +1,10 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import static org.lwjgl.opengl.GL11.*;
 
-import com.github.mimo31.w50rld.StringDraw.TextAlign;
+import java.awt.Color;
+
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Represents an Item with a count. Represents one slot in an inventory.
@@ -69,18 +68,17 @@ public class ItemStack {
 	
 	/**
 	 * Draws an inventory slot with the Item and the count.
-	 * @param g Graphics to draw through
-	 * @param x x coordinate of the location to draw
-	 * @param y y coordinate of the location to draw
-	 * @param width width of the rectangle to draw
-	 * @param height height of the rectangle to draw
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 * @param background color to use for the background
 	 */
-	public void draw(Graphics2D g, int x, int y, int width, int height, Color background)
+	public void draw(float startx, float starty, float endx, float endy, Color background)
 	{
 		// fill the background with white
-		g.setColor(background);
-		g.fillRect(x, y, width, height);
+		PaintUtils.setDrawColor(background);
+		PaintUtils.drawRectangleP(startx, starty, endx, endy);
 		
 		// if the stack contains no Items, return
 		if (this.item == null || this.count == 0)
@@ -88,48 +86,63 @@ public class ItemStack {
 			return;
 		}
 		
-		// size of the draw square for the Item
-		int itemSize = Math.min(width, height - height / 3);
+		// screen size of the draw square for the Item
+		float itemSize = Math.min((endx - startx) * Gui.width / 2, (endy - starty) * 2 / 3 * Gui.height / 2);
+		
+		float width = endx - startx;
+		float height = endy - starty;
+		float itemCanWidth = itemSize / Gui.width * 2;
+		float itemCanHeight = itemSize / Gui.height * 2;
 		
 		// draw the Item
-		this.item.draw(g, x + (width - itemSize) / 2, y + (height - height / 3 - itemSize) / 2, itemSize, itemSize);
+		this.item.draw(startx + (width - itemCanWidth) / 2, starty + (height * 2 / 3 - itemCanHeight) / 2 + height / 3, endx - (width - itemCanWidth) / 2, endy - (height * 2 / 3 - itemCanHeight) / 2);
 		
 		// draw the number of Items, if not 1
-		g.setColor(Color.black);
 		if (this.count != 1)
 		{
-			Rectangle rect = new Rectangle(x, y + height - height / 3, width, height / 3);
-			StringDraw.drawMaxString(g, width / 16, String.valueOf(this.count), TextAlign.MIDDLE, rect, Font.BOLD);
+			TextDraw.drawText(String.valueOf(this.count), startx, starty, width, height / 3, TextAlign.MIDDLE, height / 3 / 8);
+			glColor4f(0.2f, 0.2f, 0.2f, 0.2f);
 		}
 	}
 	
 	/**
 	 * Draws an ItemStack with a border around it.
-	 * @param g graphics to draw through
-	 * @param x x coordinate of the rectangle to draw in
-	 * @param y y coordinate of the rectangle to draw in
-	 * @param width width of the rectangle to draw in
- 	 * @param height height of the rectangle to draw in
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 * @param borderColor color of the border
 	 * @param stack ItemStack to draw
 	 */
-	public static void drawWithBorder(Graphics2D g, int x, int y, int width, int height, Color borderColor, ItemStack stack)
+	public static void drawWithBorder(float startx, float starty, float endx, float endy, Color borderColor, ItemStack stack)
 	{
 		// draw the background - only the border will be actually visible from it
-		g.setColor(borderColor);
-		g.fillRect(x, y, width, height);
+		PaintUtils.setDrawColor(borderColor);
+		PaintUtils.drawRectangleP(startx, starty, endx, endy);
 		
-		// width of the border
-		int borderSize = Math.min(width, height) / 12;
+		// canvas sizes of the whole stack including the border
+		float width = endx - startx;
+		float height = endy - starty;
 		
-		// draw the background for the item
-		g.setColor(Color.white);
-		g.fillRect(x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize);
+		// screen width of the border 
+		float borderSize = Math.min(width * Gui.width / 2, height * Gui.height / 2) / 12;
+		
+		// coordinates of the stack inside the border
+		float stackx1 = startx + borderSize / Gui.width * 2;
+		float stacky1 = starty + borderSize / Gui.height * 2;
+		float stackx2 = endx - borderSize / Gui.width * 2;
+		float stacky2 = endy - borderSize / Gui.height * 2;
 		
 		// draw the Stack if not null
 		if (stack != null)
 		{
-			stack.draw(g, x + borderSize, y + borderSize, width - 2 * borderSize, height - 2 * borderSize, Color.white);
+			stack.draw(stackx1, stacky1, stackx2, stacky2, Color.white);
+		}
+		else
+		{
+			// draw just a white background
+			glColor3f(1, 1, 1);
+			PaintUtils.drawRectangleP(stackx1, stacky1, stackx2, stacky2);
 		}
 	}
 }

@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class Brick extends SimplyDrawnItem {
 
 	public Brick() {
-		super("Brick", "Brick.png");
+		super("Brick", "Brick");
 	}
 
 }

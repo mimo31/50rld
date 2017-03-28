@@ -10,7 +10,7 @@ import com.github.mimo31.w50rld.Meal;
 public class Corn extends SimplyDrawnItem implements Meal {
 
 	public Corn() {
-		super("Corn", "CornI.png");
+		super("Corn", "CornI");
 	}
 
 	@Override

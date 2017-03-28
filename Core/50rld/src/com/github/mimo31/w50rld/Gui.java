@@ -1,19 +1,18 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.Timer;
+import java.awt.Point;
+import java.nio.DoubleBuffer;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
 
 /**
  * Handles low level user interaction. Usually prepares event listeners and then calls methods in Main when the event is triggered.
@@ -22,135 +21,144 @@ import javax.swing.Timer;
  */
 public class Gui {
 
-	// frame's component used to paint the game
-	private static JComponent paintComponent;
-
+	// identifier of the game window
+	public static long window;
+	
+	// sizes of the window's content pane - automatically changed when the window resizes
+	public static int width;
+	public static int height;
+	
+	// whether the current window is decorated
+	public static boolean decorated = true;
+	
+	/**
+	 * Initializes the window and the OpenGL drawing. Should be called just once when initializing the game.
+	 */
 	public static void initializeGui()
 	{
-		// create the window and override the paint with our paint paint method
-		JFrame frame = new JFrame("50rld");
-
-		// create a component to paint
-		paintComponent = new JComponent() {
-
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 371375858304466268L;
-
-			@Override
-			public void paint(Graphics graphics)
-			{
-				Main.paint((Graphics2D) graphics, this.getWidth(), this.getHeight());
-			}
-
-		};
-
-		// add the component to the frame
-		frame.add(paintComponent);
-
-		// configure the window
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-		// create a timer that calls our update method and repaints when
-		// triggered
-		Timer updateTimer = new Timer(16, new ActionListener()
-		{
-
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				Container contentPane = frame.getContentPane();
-				Main.update(contentPane.getWidth(), contentPane.getHeight(), 16);
-				frame.repaint();
-			}
-
-		});
-
-		// add key listener
-		frame.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				Main.keyReleased(e);
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// toggle between fullscreen and normal mode
-				if (e.getKeyCode() == KeyEvent.VK_F11)
-				{
-					frame.dispose();
-					if (frame.isUndecorated())
-					{
-						frame.setUndecorated(false);
-						frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-					}
-					else
-					{
-						frame.setUndecorated(true);
-						frame.setLocation(0, 0);
-					}
-					frame.pack();
-					frame.setVisible(true);
-				}
-				Main.keyPressed(e);
-			}
-		});
-
-		// add mouse listener
-		frame.getContentPane().addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				Main.mouseClicked(e);
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				
-			}
-			
-		});
+		GLFWErrorCallback.createPrint(System.err).set();
 		
-		// set minimal window size
-		frame.setMinimumSize(new Dimension(400, 400));
-
-		// start the update timer
-		updateTimer.start();
-
-		// make the window visible
-		frame.setVisible(true);
+		if (!glfwInit())
+		{
+			throw new RuntimeException("Failed to intialize GLFW.");
+		}
+		
+		window = createWindow(true);
+		
+		ResourceHandler.loadTextures();
+		TextDraw.loadFont();
+		
 	}
 	
 	/**
-	 * Returns the size of the frame component that encloses all painting.
-	 * @return size of the frame's contents
+	 * Crates the window.
+	 * @param decorated whether the window should be decorated
+	 * @return the identifier of the window
 	 */
-	public static Dimension getContentSize()
+	private static long createWindow(boolean decorated)
 	{
-		return paintComponent.getSize();
+		// set the hints
+		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+		glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
+		glfwWindowHint(GLFW_DECORATED, decorated ? GL_TRUE : GL_FALSE);
+		
+		// create the window
+		long win = glfwCreateWindow(600, 480, "50rld", NULL, NULL);
+		if (win == 0)
+		{
+			throw new RuntimeException("Failed to create a GLFW window.");
+		}
+		
+		// set the proper size
+		GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwSetWindowPos(win, (videoMode.width() - 600) / 2, (videoMode.height() - 480) / 2);
+		
+		// set the callbacks
+		glfwSetKeyCallback(win, new KeyHandler());
+		glfwSetMouseButtonCallback(win, new MouseHandler());
+		
+		glfwSetWindowSizeCallback(win, (long window, int w, int h) ->
+	    	{
+	        	glViewport(0, 0, w, h);
+	        	width = w;
+	        	height = h;
+	    	}
+		);
+		
+		// make context out of the window
+		glfwMakeContextCurrent(win);
+		
+		// show the window
+		glfwShowWindow(win);
+		
+		// setup GL
+		GL.createCapabilities();
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		glClearColor(1f, 1f, 1f, 1f);
+		
+		return win;
+	}
+	
+	/**
+	 * Terminates GLFW.
+	 */
+	public static void terminateGui()
+	{
+		glfwTerminate();
 	}
 
+	private static class KeyHandler extends GLFWKeyCallback
+	{
+
+		@Override
+		public void invoke(long window, int key, int scancode, int action, int mods) {
+			if (action == GLFW_PRESS)
+			{
+				// toggle between fullscreen and normal mode - doesn't work very well currently
+				if (key == GLFW_KEY_F11)
+				{
+					// destroy the old window
+					glfwDestroyWindow(window);
+					
+					// create the new window with switched decorations
+					createWindow(!decorated);
+					
+					decorated = !decorated;
+				}
+				Main.keyPressed(key);
+			}
+			else if (action == GLFW_RELEASE)
+			{
+				Main.keyReleased(key);
+			}
+		}
+		
+	}
+	
+	private static class MouseHandler extends GLFWMouseButtonCallback
+	{
+
+		@Override
+		public void invoke(long window, int button, int action, int mods) {
+			if (action == GLFW_PRESS)
+			{
+				Main.mouseClicked(getMousePosition());
+			}
+		}
+		
+	}
+	
+	/**
+	 * @return the position of the mouse cursor in the window coordinates
+	 */
+	public static Point getMousePosition()
+	{
+		DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+		DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+		glfwGetCursorPos(window, xBuffer, yBuffer);
+		return new Point((int)xBuffer.get(0), (int)yBuffer.get(0));
+	}
 }

@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class Chest extends SimplyDrawnItem {
 
 	public Chest() {
-		super("Chest", "Chest.png", new ItemAction[] {
+		super("Chest", "Chest", new ItemAction[] {
 				
 				new PlaceItemAction("Construct", "Chest", -1)
 				

@@ -1,14 +1,12 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.*;
 
-import com.github.mimo31.w50rld.StringDraw.TextAlign;
+import java.awt.Color;
+import java.awt.Point;
+
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Represents a box with options with associated actions which are, when the associated option is chosen, invoked.
@@ -33,16 +31,17 @@ public class OptionBox extends Box {
 	 * Creates an OptionBox object.
 	 * @param options names of the options
 	 * @param actions actions to execute
-	 * @param x x coordinate divided by the width of the window
-	 * @param y y coordinate divided by the height of the window
+	 * @param x x coordinate on the canvas
+	 * @param y y coordinate on the canvas
 	 * @param headline headline for the box
 	 */
-	public OptionBox(String[] options, Runnable[] actions, float x, float y, String headline)
+	public OptionBox(String[] options, Runnable[] actions, float x, float y, String headline, CornerAlign align)
 	{
 		super(x, y);
 		this.options = options;
 		this.actions = actions;
 		this.headline = headline;
+		super.align(align);
 	}
 	
 	/**
@@ -52,50 +51,47 @@ public class OptionBox extends Box {
 	 * @param height height of the window
 	 */
 	@Override
-	public void draw(Graphics2D g, int width, int height)
+	public void draw()
 	{
-		int locX = (int) (this.x * width);
-		int locY = (int) (this.y * height);
-		int boxWidth = width / 6;
+		float contentWidth = 6 * Constants.BOX_TILE_SIZE;
 		
-		int borderSize = boxWidth / 64;
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
 		
-		int optionHeight = boxWidth / 6;
+		float contentHeight = (this.options.length + 1) * tileHeight;
 		
-		int boxHeight = (this.options.length + 1) * optionHeight + 2 * borderSize;
+		float boxWidth = contentWidth + 2 * Constants.BOX_BORDER_SIZE;
+		
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
+		
+		float boxHeight = contentHeight + 2 * borderHeight;
 		
 		// fill the whole box (only the border will remain from this fill)
-		g.setColor(Color.magenta);
-		g.fillRect(locX, locY, boxWidth, boxHeight);
+		PaintUtils.setDrawColor(Color.magenta);
+		PaintUtils.drawRectangle(this.x, this.y, boxWidth, boxHeight);
 		
 		// coordinates of the box's content (the box without the borders)
-		int contentX = locX + borderSize;
-		int contentY = locY + borderSize;
-		int contentWidth = boxWidth - 2 * borderSize;
-		int contentHeight = boxHeight - 2 * borderSize;
+		float contentX = this.x + Constants.BOX_BORDER_SIZE;
+		float contentY = this.y + borderHeight;
 		
 		// fill the box's content rectangle
-		g.setColor(Color.white);
-		g.fillRect(contentX, contentY, contentWidth, contentHeight);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(contentX, contentY, contentWidth, contentHeight);
 		
 		// draw the headline and the option names
 		for (int i = 0; i < this.options.length + 1; i++)
 		{
 			// rectangle enclosing the current option name / headline
-			Rectangle optionRect = new Rectangle(contentX, contentY + i * optionHeight, contentWidth, optionHeight);
+			float drawY = contentY + (this.options.length - i) * tileHeight;
 			
 			// text to be drawn - option name / headline
 			String optionText;
 			if (i == 0)
 			{
 				// fill the headline's background
-				g.setColor(Color.orange);
-				g.fill(optionRect);
+				PaintUtils.setDrawColor(Color.ORANGE);
+				PaintUtils.drawRectangle(contentX, drawY, contentWidth, tileHeight);
 				
 				optionText = this.headline;
-				
-				// set the graphics's color to draw the option names correctly
-				g.setColor(Color.black);
 			}
 			else
 			{
@@ -103,14 +99,13 @@ public class OptionBox extends Box {
 			}
 			
 			// draw the option name / headline
-			StringDraw.drawMaxString(g, 2 * borderSize, optionText, i == 0 ? TextAlign.LEFT : TextAlign.MIDDLE, optionRect, i == 0 ? Font.BOLD: Font.PLAIN);
+			TextDraw.drawText(optionText, contentX, drawY, contentWidth, tileHeight, i == 0 ? TextAlign.LEFT : TextAlign.MIDDLE, Constants.BOX_BORDER_SIZE);
 			
 			// draw the indicator that the current option is selected
 			if (this.selected == i - 1)
 			{
-				g.setColor(Color.blue);
-				g.fillRect(optionRect.x + optionRect.width / 4, optionRect.y + optionRect.height - borderSize, optionRect.width / 2, borderSize);
-				g.setColor(Color.black);
+				glColor3f(0, 0, 1);
+				PaintUtils.drawRectangle(contentX + contentWidth / 4, drawY, contentWidth / 2, Constants.BOX_BORDER_SIZE);
 			}
 		}
 	}
@@ -124,38 +119,39 @@ public class OptionBox extends Box {
 	 * @return true if the box was clicked, else false
 	 */
 	@Override
-	public boolean mouseClicked(MouseEvent event, Runnable removeAction, int width, int height)
+	public boolean mouseClicked(Point location, Runnable removeAction)
 	{
-		int clickX = event.getX();
-		int clickY = event.getY();
+		float clickX = location.x * 2f / Gui.width - 1;
+		float clickY = 1 - location.y * 2f / Gui.height;
 		
-		int locX = (int) (this.x * width);
-		int locY = (int) (this.y * height);
-		int boxWidth = width / 6;
+		float contentWidth = 6 * Constants.BOX_TILE_SIZE;
 		
-		int borderSize = boxWidth / 64;
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
 		
-		int optionHeight = boxWidth / 6;
+		float contentHeight = (this.options.length + 1) * tileHeight;
 		
-		int boxHeight = (this.options.length + 1) * optionHeight + 2 * borderSize;
+		float boxWidth = contentWidth + 2 * Constants.BOX_BORDER_SIZE;
+		
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
+		
+		float boxHeight = contentHeight + 2 * borderHeight;
 		
 		// check if the click was inside the box
-		if (clickX >= locX && clickY >= locY && clickX < locX + boxWidth && clickY < locY + boxHeight)
+		if (clickX >= this.x && clickY >= this.y && clickX < this.x + boxWidth && clickY < this.y + boxHeight)
 		{
 			// check if the click was in the content (inside the borders)
-			if (clickX >= locX + borderSize && clickY >= locY + borderSize && clickX < locX + boxWidth - borderSize && clickY < locY + boxHeight - borderSize)
+			if (clickX >= this.x + Constants.BOX_BORDER_SIZE && clickY >= this.y + borderHeight && clickX < this.x + boxWidth - Constants.BOX_BORDER_SIZE && clickY < this.y + boxHeight - borderHeight)
 			{
 				// click's y location relative to the top edge of the content rectangle
-				int contentClickY = (clickY - locY - borderSize - optionHeight);
+				float contentClickY = clickY - this.y - borderHeight;
+				
+				int invertedOption = (int)Math.floor(contentClickY / tileHeight);
 				
 				// check if the headline was not clicked
-				if (contentClickY >= 0)
+				if (invertedOption < this.options.length)
 				{
-					// calculate the option number that was clicked
-					int option = contentClickY / optionHeight;
-					
 					// invoke the corresponding action
-					this.actions[option].run();
+					this.actions[this.options.length - 1 - invertedOption].run();
 					
 					// remove the box
 					removeAction.run();
@@ -167,13 +163,13 @@ public class OptionBox extends Box {
 	}
 	
 	@Override
-	public void key(KeyEvent event, Runnable removeAction)
+	public void keyReleased(int keyCode, Runnable removeAction)
 	{
-		switch (event.getKeyCode())
+		switch (keyCode)
 		{
 			// move the selection up
-			case KeyEvent.VK_W:
-			case KeyEvent.VK_UP:
+			case GLFW_KEY_W:
+			case GLFW_KEY_UP:
 				if (this.selected != 0)
 				{
 					this.selected--;
@@ -181,8 +177,8 @@ public class OptionBox extends Box {
 				break;
 				
 			// move the selection down
-			case KeyEvent.VK_S:
-			case KeyEvent.VK_DOWN:
+			case GLFW_KEY_S:
+			case GLFW_KEY_DOWN:
 				if (this.selected != this.options.length - 1)
 				{
 					this.selected++;
@@ -190,7 +186,8 @@ public class OptionBox extends Box {
 				break;
 				
 			// confirm the selection
-			case KeyEvent.VK_ENTER:
+			case GLFW_KEY_ENTER:
+			case GLFW_KEY_KP_ENTER:
 				if (this.actions.length != 0)
 				{
 					this.actions[this.selected].run();
@@ -201,16 +198,14 @@ public class OptionBox extends Box {
 	}
 	
 	@Override
-	protected Dimension getSize(int width, int height)
+	protected float getWidth()
 	{
-		int boxWidth = width / 6;
-		
-		int borderSize = boxWidth / 64;
-		
-		int optionHeight = boxWidth / 6;
-		
-		int boxHeight = (this.options.length + 1) * optionHeight + 2 * borderSize;
-		
-		return new Dimension(boxWidth, boxHeight);
+		return 2 * Constants.BOX_BORDER_SIZE + 6 * Constants.BOX_TILE_SIZE;
+	}
+	
+	@Override
+	protected float getHeight()
+	{
+		return (2 * Constants.BOX_BORDER_SIZE + (this.options.length + 1) * Constants.BOX_TILE_SIZE) * Gui.width / Gui.height;
 	}
 }

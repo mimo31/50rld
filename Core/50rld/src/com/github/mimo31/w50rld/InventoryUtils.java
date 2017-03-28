@@ -1,5 +1,7 @@
 package com.github.mimo31.w50rld;
 
+import com.github.mimo31.w50rld.Box.CornerAlign;
+
 /**
  * Provides methods for manipulating ItemStack arrays as inventories.
  * @author mimo31
@@ -155,12 +157,12 @@ public class InventoryUtils {
 		}
 		
 		// display the error message
-		InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
+		InfoBox box = new InfoBox(-1 / 8f, 0, errorMessage, CornerAlign.TOPLEFT);
 		Main.addBox(box);
 	}
 	
 	/**
-	 * Returns whether the specified inventory at least a specified number of Items of specified type.
+	 * Returns whether the specified inventory has at least a specified number of Items of the specified type.
 	 * @param inventory inventory to scan
 	 * @param minimalCount the least number of items needed
 	 * @param item the Item type to look for
@@ -184,7 +186,7 @@ public class InventoryUtils {
 	}
 	
 	/**
-	 * Removes the specified number of items of specified type from the specified inventory.
+	 * Removes the specified number of items of specified type from the specified inventory. Not safe, an Exception is thrown is there is not enough items.
 	 * @param inventory inventory to manipulate
 	 * @param count the number of items to remove
 	 * @param item the Item type to remove

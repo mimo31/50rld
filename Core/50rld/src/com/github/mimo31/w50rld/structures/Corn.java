@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.structures;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
@@ -41,17 +39,17 @@ public class Corn extends Structure implements Plant {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber) {
 		String textureName;
 		if (((CornData)Main.map.getTile(tileX, tileY).getStructure(structureNumber)).grown)
 		{
-			textureName = "CornS.png";
+			textureName = "CornS";
 		}
 		else
 		{
-			textureName = "CornNotGrown.png";
+			textureName = "CornNotGrown";
 		}
-		PaintUtils.drawSquareTexture(g, x, y, width, height, textureName);
+		PaintUtils.drawTexture(startx, starty, endx, endy, textureName);
 	}
 	
 	@Override

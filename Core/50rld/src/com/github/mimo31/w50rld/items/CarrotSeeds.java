@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class CarrotSeeds extends SimplyDrawnItem {
 
 	public CarrotSeeds() {
-		super("Carrot Seeds", "CarrotSeeds.png", new ItemAction[] { new SurfacePlaceAction("Seed", "Seeded Carrots", "Dirt") });
+		super("Carrot Seeds", "CarrotSeeds", new ItemAction[] { new SurfacePlaceAction("Seed", "Seeded Carrots", "Dirt") });
 	}
 
 }

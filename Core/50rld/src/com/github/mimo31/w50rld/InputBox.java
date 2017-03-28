@@ -1,14 +1,13 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.*;
+
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.github.mimo31.w50rld.StringDraw.TextAlign;
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Represents a Box with a request text and a field for user text input.
@@ -26,13 +25,24 @@ public class InputBox extends Box {
 	// function the is invoked the user submits their input
 	private final Consumer<String> submitFunction;
 	
-	// function that returns whether a character is valid
-	private final Function<Integer, Boolean> charFilter;
+	// function that creates characters from pressed keycodes, returns 0 if the key should not be accepted at all
+	private final Function<Integer, Integer> charInterpreter;
 	
 	/**
 	 * Character Filter that allows only digits.
 	 */
-	public static final Function<Integer, Boolean> DIGIT_FILTER = (chr) -> new Boolean(chr.intValue() >= '0' && chr.intValue() <= '9');
+	public static final Function<Integer, Integer> DIGIT_INTERPRETER = (code) -> {
+		int val = code.intValue();
+		if (val <= GLFW_KEY_KP_9 && val >= GLFW_KEY_KP_0)
+		{
+			return new Integer('0' + val - GLFW_KEY_KP_0);
+		}
+		else if (val <= GLFW_KEY_9 && val >= GLFW_KEY_0)
+		{
+			return new Integer('O' + val - GLFW_KEY_0);
+		}
+		return new Integer(0);
+	};
 	
 	/**
 	 * Creates an InputBox.
@@ -42,71 +52,73 @@ public class InputBox extends Box {
 	 * @param submitFunction function that submits user's input
 	 * @param charFilter function that decided whether a typed character is valid
 	 */
-	public InputBox(float x, float y, String request, Consumer<String> submitFunction, Function<Integer, Boolean> charFilter) {
+	public InputBox(float x, float y, String request, Consumer<String> submitFunction, Function<Integer, Integer> charInterpreter, CornerAlign align) {
 		super(x, y);
 		this.request = request;
 		this.submitFunction = submitFunction;
-		this.charFilter = charFilter;
+		this.charInterpreter = charInterpreter;
+		super.align(align);
 	}
 
 	@Override
-	public void draw(Graphics2D g, int width, int height) {
-		int locX = (int) (this.x * width);
-		int locY = (int) (this.y * height);
-		int boxWidth = width / 6;
+	public void draw() {
+		// box with a 6 x 2 tile grid
+
+		float contentWidth = 6 * Constants.BOX_TILE_SIZE;
 		
-		int borderSize = boxWidth / 64;
+		float boxWidth = 2 * Constants.BOX_BORDER_SIZE + contentWidth;
 		
-		int boxHeight = (boxWidth / 6 + borderSize) * 2;
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
+		
+		float contentHeight = 2 * tileHeight;
+		
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
+		
+		float boxHeight = 2 * borderHeight + contentHeight;
 		
 		// draw the background
-		g.setColor(Color.magenta);
-		g.fillRect(locX, locY, boxWidth, boxHeight);
+		PaintUtils.setDrawColor(Color.magenta);
+		PaintUtils.drawRectangle(this.x, this.y, boxWidth, boxHeight);
 		
-		int contentX = locX + borderSize;
-		int contentY = locY + borderSize;
-		int contentWidth = boxWidth - 2 * borderSize;
-		
-		Rectangle requestBounds = new Rectangle(contentX, contentY, contentWidth, boxWidth / 6);
-		Rectangle inputBounds = new Rectangle(contentX, contentY + boxWidth / 6, contentWidth, boxWidth / 6);
+		float contentX = this.x + Constants.BOX_BORDER_SIZE;
+		float contentY = this.y + borderHeight;
 		
 		// draw the request background
-		g.setColor(Color.orange);
-		g.fill(requestBounds);
+		PaintUtils.setDrawColor(Color.orange);
+		PaintUtils.drawRectangle(contentX, contentY + tileHeight, contentWidth, tileHeight);
 		
 		// draw the input background
-		g.setColor(Color.white);
-		g.fill(inputBounds);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(contentX, contentY, contentWidth, tileHeight);
 		
 		// draw the request and input texts
-		g.setColor(Color.black);
-		StringDraw.drawMaxString(g, borderSize * 2, this.request, TextAlign.LEFT, requestBounds);
-		StringDraw.drawMaxString(g, borderSize * 2, this.input, TextAlign.LEFT, inputBounds);
+		TextDraw.drawText(this.request, contentX, contentY + tileHeight, contentWidth, tileHeight, TextAlign.LEFT, Constants.BOX_BORDER_SIZE);
+		TextDraw.drawText(this.input, contentX, contentY, contentWidth, tileHeight, TextAlign.LEFT, Constants.BOX_BORDER_SIZE);
 	}
 
 	@Override
-	protected Dimension getSize(int width, int height) {
-		int boxWidth = width / 6;
-		
-		int borderSize = boxWidth / 64;
-		
-		int boxHeight = (boxWidth / 6 + borderSize) * 2;
-		
-		return new Dimension(boxWidth, boxHeight);
-	}
-
-	@Override
-	public void key(KeyEvent event, Runnable closeAction)
+	protected float getWidth()
 	{
-		int code = event.getKeyCode();
-		if (code == KeyEvent.VK_ENTER)
+		return 2 * Constants.BOX_BORDER_SIZE + 6 * Constants.BOX_TILE_SIZE;
+	}
+	
+	@Override
+	protected float getHeight()
+	{
+		return 2 * (Constants.BOX_BORDER_SIZE + Constants.BOX_TILE_SIZE) * Gui.width / Gui.height;
+	}
+	
+	@Override
+	public void keyReleased(int keyCode, Runnable closeAction)
+	{
+		if (keyCode == GLFW_KEY_ENTER || keyCode == GLFW_KEY_KP_ENTER)
 		{
 			// submit the input and close
 			this.submitFunction.accept(this.input);
 			closeAction.run();
 			return;
 		}
-		if (code == KeyEvent.VK_BACK_SPACE)
+		if (keyCode == GLFW_KEY_BACKSPACE)
 		{
 			// remove the last character from the input (if there are some characters)
 			int inputLength = this.input.length();
@@ -117,11 +129,11 @@ public class InputBox extends Box {
 			this.input = this.input.substring(0, inputLength - 1);
 			return;
 		}
-		// append the typed character if it isn't filtered out by the filter function
-		char keyChar = event.getKeyChar();
-		if (this.charFilter.apply(new Integer(keyChar)).booleanValue())
+		// interpret the pressed key
+		int c = this.charInterpreter.apply(new Integer(keyCode));
+		if (c != 0)
 		{
-			this.input = this.input + String.valueOf(keyChar);
+			this.input = this.input + ((char) c);
 		}
 	}
 }

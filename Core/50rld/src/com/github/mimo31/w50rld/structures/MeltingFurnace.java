@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.structures;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.FuelItem;
 import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.ItemStack;
@@ -15,6 +13,7 @@ import com.github.mimo31.w50rld.PaintUtils;
 import com.github.mimo31.w50rld.Structure;
 import com.github.mimo31.w50rld.StructureData;
 import com.github.mimo31.w50rld.Tile;
+import com.github.mimo31.w50rld.Box.CornerAlign;
 
 /**
  * Represents the Melting Furnace Structure. The Structure can be used to melt metals and cast the molten metal with molds.
@@ -32,7 +31,7 @@ public class MeltingFurnace extends Structure {
 					@Override
 					public void action(int tileX, int tileY) {
 						MeltingFurnaceData furnaceData = (MeltingFurnaceData)Main.map.getTile(tileX, tileY).getTopStructure();
-						Main.addBox(new MeltingFurnaceUIBox(7 / 16f, 1 / 2f, furnaceData));
+						Main.addBox(new MeltingFurnaceUIBox(-1 / 8f, 0, furnaceData, CornerAlign.TOPLEFT));
 					}
 					
 				},
@@ -52,8 +51,8 @@ public class MeltingFurnace extends Structure {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "MeltingFurnaceS.png");
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber) {
+		PaintUtils.drawTexture(startx, starty, endx, endy, "MeltingFurnaceS");
 	}
 
 	@Override
@@ -97,7 +96,8 @@ public class MeltingFurnace extends Structure {
 			super(ObjectsIndex.getStructure("Melting Furnace"));
 		}
 		
-		public void update(int tileX, int tileY, int deltaTime)
+		@Override
+		public void update(int tileX, int tileY, int deltaTime, int structureNumber)
 		{
 			// decrement the temperature but not below 295 K
 			this.temperature = Math.max(this.temperature - 0.001f * deltaTime, 295);

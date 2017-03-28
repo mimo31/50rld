@@ -9,7 +9,7 @@ public class Table extends SimplyDrawnItem {
 
 	public Table()
 	{
-		super("Table", "TableI.png", new ItemAction[] { new PlaceItemAction("Construct", "Table", -1) });
+		super("Table", "TableI", new ItemAction[] { new PlaceItemAction("Construct", "Table", -1) });
 	}
 	
 }

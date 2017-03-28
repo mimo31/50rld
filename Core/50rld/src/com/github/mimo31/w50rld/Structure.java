@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.Graphics2D;
-
 /**
  * Represents a Structure on the ground. Its subclasses are intended to only be instantiated once during the game - when loading indexes.
  */
@@ -22,16 +20,15 @@ public abstract class Structure {
 	
 	/**
 	 * Draws the Structure.
-	 * @param g graphics to draw through
-	 * @param x x coordinate of the location to draw
-	 * @param y y coordinate of the location to draw
-	 * @param width width of the rectangle to draw
-	 * @param height height of the rectangle to draw
+	 * @param startx canvas x location of the bottom left corner
+	 * @param starty canvas y location of the bottom left corner
+	 * @param endx canvas x location of the top right corner
+	 * @param endy canvas y location of the top right corner
 	 * @param tileX x coordinate of the Tile to draw
 	 * @param tileY y coordinate of the Tile to draw
 	 * @param structureNumber number of the structure in the structure list of the Tile
 	 */
-	public abstract void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber);
+	public abstract void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber);
 
 	public Structure(String name, boolean overdraws, StructureAction[] actions)
 	{

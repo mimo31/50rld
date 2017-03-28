@@ -9,7 +9,7 @@ public class GrassPile extends SimplyDrawnItem {
 
 	public GrassPile()
 	{
-		super("Grass Pile", "GrassPile.png");
+		super("Grass Pile", "GrassPile");
 	}
 	
 }

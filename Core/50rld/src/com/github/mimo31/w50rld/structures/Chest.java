@@ -1,7 +1,6 @@
 package com.github.mimo31.w50rld.structures;
 
-import java.awt.Graphics2D;
-
+import com.github.mimo31.w50rld.Box.CornerAlign;
 import com.github.mimo31.w50rld.ChestUIBox;
 import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
@@ -27,7 +26,7 @@ public class Chest extends Structure {
 
 					@Override
 					public void action(int tileX, int tileY) {
-						Main.addBox(new ChestUIBox(7 / 16f, 1 / 2f, ((ChestData) Main.map.getTile(tileX, tileY).getTopStructure()).items));
+						Main.addBox(new ChestUIBox(-1 / 8f, 0, ((ChestData) Main.map.getTile(tileX, tileY).getTopStructure()).items, CornerAlign.TOPLEFT));
 					}
 					
 				},
@@ -55,8 +54,8 @@ public class Chest extends Structure {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber) {
-		PaintUtils.drawSquareTexture(g, x, y, width, height, "Chest.png");
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber) {
+		PaintUtils.drawTexture(startx, starty, endx, endy, "Chest");
 	}
 
 	@Override

@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class IronBlade extends SimplyDrawnItem {
 
 	public IronBlade() {
-		super("Iron Blade", "IronBlade.png");
+		super("Iron Blade", "IronBlade");
 	}
 	
 }

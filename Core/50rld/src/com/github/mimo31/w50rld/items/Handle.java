@@ -9,7 +9,7 @@ public class Handle extends SimplyDrawnItem {
 
 	public Handle()
 	{
-		super("Handle", "Handle.png");
+		super("Handle", "Handle");
 	}
 	
 }

@@ -1,13 +1,12 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
-import com.github.mimo31.w50rld.StringDraw.TextAlign;
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 import com.github.mimo31.w50rld.structures.MeltingFurnace.MeltingFurnaceData;
 
 /**
@@ -29,132 +28,138 @@ public class MeltingFurnaceUIBox extends Box {
 	// whether the player is currently selecting the mold to use for casting
 	private boolean selectingMold;
 	
-	public MeltingFurnaceUIBox(float x, float y, MeltingFurnaceData furnace) {
+	public MeltingFurnaceUIBox(float x, float y, MeltingFurnaceData furnace, CornerAlign align) {
 		super(x, y);
 		this.furnace = furnace;
+		super.align(align);
 	}
 
 	@Override
-	public void draw(Graphics2D g, int width, int height) {
-		int locX = (int) (super.x * width);
-		int locY = (int) (super.y * height);
+	public void draw() {
+		// box with a 7 x 8 grid
 		
-		int borderSize = width / 6 / 64;
+		float contentWidth = 7 * Constants.BOX_TILE_SIZE;
 		
-		int gridSize = width / 36;
+		float boxWidth = 2 * Constants.BOX_BORDER_SIZE + contentWidth;
 		
-		int contentWidth = gridSize * 7;
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
 		
-		int contentHeight = gridSize * 8;
+		float contentHeight = 8 * tileHeight;
+		
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
+		
+		float boxHeight = 2 * borderHeight + contentHeight;
 		
 		// fill the border
-		g.setColor(Color.magenta);
-		g.fillRect(locX, locY, contentWidth + 2 * borderSize, contentHeight + 2 * borderSize);
+		PaintUtils.setDrawColor(Color.magenta);
+		PaintUtils.drawRectangle(this.x, this.y, boxWidth, boxHeight);
 		
-		int contentX = locX + borderSize;
-		int contentY = locY + borderSize;
+		float contentX = this.x + Constants.BOX_BORDER_SIZE;
+		float contentY = this.y + borderHeight;
 		
 		// draw the headline
-		g.setColor(Color.orange);
-		Rectangle headlineBounds = new Rectangle(contentX, contentY, contentWidth, gridSize);
-		g.fill(headlineBounds);
-		g.setColor(Color.black);
-		StringDraw.drawMaxString(g, borderSize * 2, "Melting Furnace", TextAlign.LEFT, headlineBounds);
+		PaintUtils.setDrawColor(Color.orange);
+		PaintUtils.drawRectangle(contentX, contentY + 7 * tileHeight, contentWidth, tileHeight);
+		TextDraw.drawText("Melting Furnace", contentX, contentY + 7 * tileHeight, contentWidth, tileHeight, TextAlign.LEFT, Constants.BOX_BORDER_SIZE);
 		
 		// fill the background
-		g.setColor(Color.white);
-		g.fillRect(contentX, contentY + gridSize, contentWidth, contentHeight - gridSize);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(contentX, contentY, contentWidth, 7 * tileHeight);
 		
 		// fill the molten metal tank's border
-		g.setColor(Color.black);
-		g.fillRect(contentX + gridSize * 3, contentY + gridSize * 2, gridSize, gridSize * 5);
+		glColor3f(0, 0, 0);
+		PaintUtils.drawRectangle(contentX + Constants.BOX_TILE_SIZE * 3, contentY + tileHeight * 1, Constants.BOX_TILE_SIZE, tileHeight * 5);
 
-		int tankBorderSize = gridSize / 8;
-		int tankContentX = contentX + gridSize * 3 + tankBorderSize;
-		int tankContentTopY = contentY + gridSize * 2 + tankBorderSize;
-		int tankContentBottomY = contentY + gridSize * 7 - tankBorderSize;
-		int tankContentWidth = gridSize - 2 * tankBorderSize;
-		int tankContentHeight = gridSize * 5 - tankBorderSize * 2;
-		int metalBarHeight = this.furnace.metalVolume * tankContentHeight / 1200;
+		float tankBorderWidth = Constants.BOX_TILE_SIZE / 8;
+		float tankBorderHeight = tileHeight / 8;
+		float tankContentX = contentX + Constants.BOX_TILE_SIZE * 3 + tankBorderWidth;
+		float tankContentBottomY = contentY + tileHeight + tankBorderHeight;
+		float tankContentWidth = Constants.BOX_TILE_SIZE - 2 * tankBorderWidth;
+		float tankContentHeight = tileHeight * 5 - tankBorderHeight * 2;
+		float metalBarHeight = this.furnace.metalVolume * tankContentHeight / 1200;
 		
 		// fill the tank's background
-		g.setColor(Color.white);
-		g.fillRect(tankContentX, tankContentTopY, tankContentWidth, tankContentHeight - metalBarHeight);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(tankContentX, tankContentBottomY + metalBarHeight, tankContentWidth, tankContentHeight - metalBarHeight);
 		
 		// fill the molten metal bar
 		if (this.furnace.moltenMetal != null)
 		{
-			g.setColor(this.furnace.moltenMetal.color);
-			g.fillRect(tankContentX, tankContentBottomY - metalBarHeight, tankContentWidth, metalBarHeight);
+			PaintUtils.setDrawColor(this.furnace.moltenMetal.color);
+			PaintUtils.drawRectangle(tankContentX, tankContentBottomY, tankContentWidth, metalBarHeight);
 		}
 		
 		// fill the currently melting metal bar
 		if (this.furnace.meltState != 0)
 		{
 			Meltable meltingItem = (Meltable)this.furnace.meltingItems.getItem();
-			int newMetalBarHeight = Math.min(meltingItem.getVolume(), 1200 - this.furnace.metalVolume) * tankContentHeight / 1200;
+			float newMetalBarHeight = Math.min(meltingItem.getVolume(), 1200 - this.furnace.metalVolume) * tankContentHeight / 1200;
 			Color metalColor = meltingItem.getMetal().color;
-			g.setColor(new Color(metalColor.getRed(), metalColor.getGreen(), metalColor.getBlue(), (int) (255 * this.furnace.meltState)));
-			g.fillRect(tankContentX, tankContentBottomY - metalBarHeight - newMetalBarHeight, tankContentWidth * 3 / 4, newMetalBarHeight);
+			glColor4f(metalColor.getRed() / 255f, metalColor.getGreen() / 255f, metalColor.getBlue() / 255f, this.furnace.meltState);
+			PaintUtils.drawRectangle(tankContentX, tankContentBottomY + metalBarHeight, tankContentWidth * 0.75f, newMetalBarHeight);
 		}
 		
 		// fill the temperature display's border
-		g.setColor(Color.black);
-		g.fillRect(contentX + gridSize * 5, contentY + gridSize * 4, gridSize, gridSize * 3);
+		glColor3f(0, 0, 0f);
+		PaintUtils.drawRectangle(contentX + 5 * Constants.BOX_TILE_SIZE, contentY + tileHeight * 1, Constants.BOX_TILE_SIZE, tileHeight * 3);
 	
-		int temperatureDisplayContentHeight = gridSize * 3 - 2 * tankBorderSize;
-		int temperatureDisplayContentX = contentX + gridSize * 5 + tankBorderSize;
+		float temperatureDisplayContentHeight = tileHeight * 3 - 2 * tankBorderHeight;
+		float temperatureDisplayContentX = contentX + Constants.BOX_TILE_SIZE * 5 + tankBorderWidth;
 		
 		float temperatureOverMaximum = (this.furnace.temperature - 295) / (1000 - 295);
-		int temperatureBarHeight = (int) (temperatureDisplayContentHeight * temperatureOverMaximum);
+		float temperatureBarHeight = temperatureDisplayContentHeight * temperatureOverMaximum;
 		
-		int meltingLimitBarHeight = Math.max(gridSize / 16, 2);
-		int meltingLimitBarY = contentY + gridSize * 7 - tankBorderSize - (int) (temperatureDisplayContentHeight * (700 - 295) / (1000 - 295)) - meltingLimitBarHeight / 2;
+		float meltingLimitBarHeight = Math.max(tileHeight / 16, 4 / Gui.height);
+		float meltingLimitBarY = contentY + tileHeight + tankBorderHeight + temperatureDisplayContentHeight * (700 - 295) / (1000 - 295) - meltingLimitBarHeight / 2;
 		
 		// fill the temperature display's background
-		g.setColor(Color.white);
-		g.fillRect(temperatureDisplayContentX, contentY + gridSize * 4 + tankBorderSize, tankContentWidth, temperatureDisplayContentHeight - temperatureBarHeight);
+		glColor3f(1, 1, 1);
+		PaintUtils.drawRectangle(temperatureDisplayContentX, contentY + tileHeight + tankBorderHeight + temperatureBarHeight, tankContentWidth, temperatureDisplayContentHeight - temperatureBarHeight);
 		
 		// fill the temperature bar
-		g.setColor(Color.red);
-		g.fillRect(temperatureDisplayContentX, contentY + gridSize * 7 - tankBorderSize - temperatureBarHeight, tankContentWidth, temperatureBarHeight);
+		glColor3f(1, 0, 0);
+		PaintUtils.drawRectangle(temperatureDisplayContentX, contentY + tileHeight + tankBorderHeight, tankContentWidth, temperatureBarHeight);
 	
 		// fill the melting limit bar with transparent green
-		g.setColor(new Color(0, 255, 0, 127));
-		g.fillRect(temperatureDisplayContentX, meltingLimitBarY, tankContentWidth, meltingLimitBarHeight);
+		glColor4f(0, 1, 0, 0.5f);
+		PaintUtils.drawRectangle(temperatureDisplayContentX, meltingLimitBarY, tankContentWidth, meltingLimitBarHeight);
 		
 		// draw the items to melt stack
-		ItemStack.drawWithBorder(g, contentX + gridSize, contentY + 2 * gridSize, gridSize, gridSize, this.selectingMetal ? Color.black : Color.gray, this.furnace.meltingItems);
+		ItemStack.drawWithBorder(contentX + Constants.BOX_TILE_SIZE, contentY + 5 * tileHeight, contentX + 2 * Constants.BOX_TILE_SIZE, contentY + 6 * tileHeight, this.selectingMetal ? Color.black : Color.gray, this.furnace.meltingItems);
 	
 		// draw the fuel items stack
-		ItemStack.drawWithBorder(g, contentX + gridSize * 5, contentY + 2 * gridSize, gridSize, gridSize, this.selectingFuel ? Color.black : Color.gray, this.furnace.fuel);
+		ItemStack.drawWithBorder(contentX + 5 * Constants.BOX_TILE_SIZE, contentY + 5 * tileHeight, contentX + 6 * Constants.BOX_TILE_SIZE, contentY + 6 * tileHeight, this.selectingFuel ? Color.black : Color.gray, this.furnace.fuel);
 		
 		// draw the mold item
-		Item.drawWithBorder(g, contentX + gridSize, contentY + gridSize * 6, gridSize, gridSize, this.selectingMold ? Color.black : Color.gray, this.furnace.mold);
+		Item.drawWithBorderS(contentX + Constants.BOX_TILE_SIZE, contentY + tileHeight, Constants.BOX_TILE_SIZE, tileHeight, this.selectingMold ? Color.black : Color.gray, this.furnace.mold);
 	}
 
 	@Override
-	protected Dimension getSize(int width, int height) {
-		int borderSize = width / 6 / 64;
-		int gridSize = width / 36;
-		return new Dimension(gridSize * 7 + 2 * borderSize, gridSize * 8 + 2 * borderSize);
-	}
-
-	@Override
-	public void key(KeyEvent event, Runnable removeAction)
+	protected float getWidth()
 	{
-		int keyCode = event.getKeyCode();
+		return 2 * Constants.BOX_BORDER_SIZE + 7 * Constants.BOX_TILE_SIZE;
+	}
+	
+	@Override
+	protected float getHeight()
+	{
+		return (2 * Constants.BOX_BORDER_SIZE + 8 * Constants.BOX_TILE_SIZE) * Gui.width / Gui.height;
+	}
+
+	@Override
+	public void keyReleased(int keyCode, Runnable removeAction)
+	{
 		// is a key with a number was pressed
-		if ((keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_8) || (keyCode >= KeyEvent.VK_NUMPAD1 && keyCode <= KeyEvent.VK_NUMPAD8))
+		if ((keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_8) || (keyCode >= GLFW_KEY_KP_1 && keyCode <= GLFW_KEY_KP_8))
 		{
 			int slotSelected;
-			if ((keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_8))
+			if ((keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_8))
 			{
-				slotSelected = keyCode - KeyEvent.VK_1;
+				slotSelected = keyCode - GLFW_KEY_1;
 			}
 			else
 			{
-				slotSelected = keyCode - KeyEvent.VK_NUMPAD1;
+				slotSelected = keyCode - GLFW_KEY_KP_1;
 			}
 			
 			// the item from the inventory that was selected
@@ -172,11 +177,11 @@ public class MeltingFurnaceUIBox extends Box {
 						
 						if (inputLength == 0)
 						{
-							errorMessage = "You must enter a number.";
+							errorMessage = "Enter a number.";
 						}
 						else if (inputLength > 2)
 						{
-							errorMessage = "There isn't enough space for that many items.";
+							errorMessage = "Not enough fuel space.";
 						}
 						else
 						{
@@ -186,7 +191,7 @@ public class MeltingFurnaceUIBox extends Box {
 							// check if there is that many items in the inventory
 							if (!InventoryUtils.hasEnoughItems(Main.getInventory(), inputCount, itemSelected))
 							{
-								errorMessage = "You don't have that many items.";
+								errorMessage = "Not enough items.";
 							}
 							else
 							{
@@ -208,7 +213,7 @@ public class MeltingFurnaceUIBox extends Box {
 								// check if there is enough space for that many items
 								if (inputCount > spaceAvailable)
 								{
-									errorMessage = "There isn't enough space for that many items.";
+									errorMessage = "There isn't enough fuel space.";
 								}
 								else
 								{
@@ -234,12 +239,12 @@ public class MeltingFurnaceUIBox extends Box {
 						}
 						
 						// show the error (if any)
-						InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
+						InfoBox box = new InfoBox(-1 / 8f, 0, errorMessage, CornerAlign.TOPLEFT);
 						Main.addBox(box);
 					};
 					
 					// ask the player for the number of the items they want to add as fuel.
-					InputBox box = new InputBox(7 / 16f, 1 / 2f, "How many " + itemSelected.name + " items would you like to add as fuel?", submitFunction, InputBox.DIGIT_FILTER);
+					InputBox box = new InputBox(-1 / 8f, 0, "How many " + itemSelected.name + " items?", submitFunction, InputBox.DIGIT_INTERPRETER, CornerAlign.TOPLEFT);
 					Main.addBox(box);
 				}
 				
@@ -263,11 +268,11 @@ public class MeltingFurnaceUIBox extends Box {
 							String errorMessage = null;
 							if (inputLength == 0)
 							{
-								errorMessage = "You must enter a number.";
+								errorMessage = "Enter a number.";
 							}
 							else if (inputLength > 2)
 							{
-								errorMessage = "There isn't enough space for that many items.";
+								errorMessage = "Not enough space for items to melt.";
 							}
 							else
 							{
@@ -275,7 +280,7 @@ public class MeltingFurnaceUIBox extends Box {
 								int itemCount = Integer.parseInt(str);
 								if (!InventoryUtils.hasEnoughItems(Main.getInventory(), itemCount, itemSelected))
 								{
-									errorMessage = "You don't have that many items.";
+									errorMessage = "Not enough items.";
 								}
 								else 
 								{
@@ -294,7 +299,7 @@ public class MeltingFurnaceUIBox extends Box {
 									// check if there is enough space for the items
 									if (spaceAvailable < itemCount)
 									{
-										errorMessage = "There isn't enought space for that many items.";
+										errorMessage = "Not enough space for items to melt.";
 									}
 									else
 									{
@@ -320,12 +325,12 @@ public class MeltingFurnaceUIBox extends Box {
 							}
 							
 							// show the error message (if any)
-							InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
+							InfoBox box = new InfoBox(-1 / 8f, 0, errorMessage, CornerAlign.TOPLEFT);
 							Main.addBox(box);
 						};
 						
 						// ask the player for the number of item they want to melt
-						InputBox box = new InputBox(7 / 16f, 1 / 2f, "How many " + itemSelected.name + " items would you like to melt?", submitFunction, InputBox.DIGIT_FILTER);
+						InputBox box = new InputBox(-1 / 8f, 0, "How many " + itemSelected.name + " items?", submitFunction, InputBox.DIGIT_INTERPRETER, CornerAlign.TOPLEFT);
 						Main.addBox(box);
 					}
 				}
@@ -355,28 +360,28 @@ public class MeltingFurnaceUIBox extends Box {
 			}
 		}
 		// start selecting the items to melt
-		else if (keyCode == KeyEvent.VK_I)
+		else if (keyCode == GLFW_KEY_I)
 		{
 			this.selectingMetal = true;
 			this.selectingFuel = false;
 			this.selectingMold = false;
 		}
 		// start selecting the mold
-		else if (keyCode == KeyEvent.VK_M)
+		else if (keyCode == GLFW_KEY_M)
 		{
 			this.selectingMold = true;
 			this.selectingFuel = false;
 			this.selectingMetal = false;
 		}
 		// start selecting the fuel items
-		else if (keyCode == KeyEvent.VK_F)
+		else if (keyCode == GLFW_KEY_F)
 		{
 			this.selectingFuel = true;
 			this.selectingMetal = false;
 			this.selectingMold = false;
 		}
 		// clear (after confirmation) the molten metal storage
-		else if (keyCode == KeyEvent.VK_C)
+		else if (keyCode == GLFW_KEY_C)
 		{
 			// stop selecting anything
 			this.selectingFuel = false;
@@ -386,7 +391,7 @@ public class MeltingFurnaceUIBox extends Box {
 			if (this.furnace.moltenMetal != null)
 			{
 				// add a Box that clears the molten metal tank if confirmed
-				ConfirmBox box = new ConfirmBox(7 / 16f, 1 / 2f, "Are you sure that you want to remove all the liquid " + this.furnace.moltenMetal.name + "?", confirmed -> {
+				ConfirmBox box = new ConfirmBox(-1 / 8f, 0, "Really want to remove all the liquid: " + this.furnace.moltenMetal.name + "?", confirmed -> {
 					if (confirmed)
 					{
 						this.furnace.moltenMetal = null;

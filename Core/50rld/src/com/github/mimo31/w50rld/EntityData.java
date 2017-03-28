@@ -1,9 +1,6 @@
 package com.github.mimo31.w50rld;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Graphics2D;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Represents one single entity on the map.
@@ -27,7 +24,7 @@ public abstract class EntityData {
 	// current number of health points
 	public float hp;
 	
-	// whether the entity is already dead but didn't disappeared yet
+	// whether the entity is already dead but hasn't disappeared yet
 	public boolean dead = false;
 	
 	// state of the color after the entity has been hit, -1 if it hasn't been hit
@@ -113,17 +110,18 @@ public abstract class EntityData {
 	
 	/**
 	 * Draws the entity according to the subclass as a part of drawing the whole entity.
+	 * Draw in the whole region which is from (-1, -1) to (1, 1).
 	 * @param g graphics to draw through
 	 * @param width width of the entity
 	 */
-	protected abstract void drawSub(Graphics2D g, int width);
+	protected abstract void drawSub();
 	
 	/**
-	 * Draws the entity.
+	 * Draws the entity from (-1, -1) to (1, 1).
 	 * @param g graphics to draw through
 	 * @param width width of the entity
 	 */
-	public void draw(Graphics2D g, int width)
+	public void draw()
 	{
 		// transparency of the red rectangle over the entity and the entity itself when dying
 		float transparency = 1 - this.hitState;
@@ -131,23 +129,20 @@ public abstract class EntityData {
 		if (this.dead)
 		{
 			// draw the entity transparent
-			Composite originalComposite = g.getComposite();
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, transparency));
-			this.drawSub(g, width);
-			g.setComposite(originalComposite);
+			glColor4f(1f, 1f, 1f, transparency);
 		}
 		else
 		{
-			// draw the entity (opaque)
-			this.drawSub(g, width);
+			// draw the entity opaque
+			glColor4f(1f, 1f, 1f, 1f);
 		}
+		this.drawSub();
 		
 		if (this.hitState != -1)
 		{
 			// draw the transparent red rectangle over the entity
-			Color transparentRed = new Color(255, 0, 0, (int)(255 * transparency));
-			g.setColor(transparentRed);
-			g.fillRect(0, 0, width, width);
+			glColor4f(1f, 0, 0, transparency);
+			PaintUtils.drawRectangleP(-1, -1, 1, 1);
 		}
 	}
 }

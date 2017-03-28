@@ -38,4 +38,15 @@ public class Constants {
 	
 	// maximum distance from the player where new entities can't spawn
 	public static final float NO_SPAWN_DISTANCE = 8;
+	
+	// the maximum and optimal FPS at which the game should run
+	public static final int TARGET_FPS = 60;
+	
+	// BOXES CONSTANTS
+	
+	// size of the border in canvas width
+	public static final float BOX_BORDER_SIZE = 1 / 128f;
+	
+	// size of the tile in canvas width
+	public static final float BOX_TILE_SIZE = 1 / 18f;
 }

@@ -1,20 +1,19 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import com.github.mimo31.w50rld.Box.CornerAlign;
 import com.github.mimo31.w50rld.Item.ItemAction;
 import com.github.mimo31.w50rld.Structure.StructureAction;
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Controls the main flow of the program.
@@ -71,34 +70,48 @@ public class Main {
 	// the selected inventory slot
 	private static int selectedItem = 0;
 	
+	// if set to false, the game loop will break the next time
+	public static boolean running = true;
+	
 	public static void main(String[] args)
 	{
-		// initialize everything
 		try
 		{
+			// initialize everything
 			initialize();
+			
+			// run everything
+			gameLoop();
 		}
-		catch (IOException e)
+		catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
 	}
 	
 	/**
-	 * Paints the current state of the game through the g parameter. Should not perform extensive non drawing actions.
-	 * @param g graphics to use
-	 * @param width width of the rectangle to paint
-	 * @param height height of the rectangle to paint
+	 * Renders the current state of the game through with the current OpenGL context. Should not perform extensive non drawing actions.
 	 */
-	public static void paint(Graphics2D g, int width, int height)
+	public static void render()
 	{
-		// the size of a Tile on the screen
-		float tileSize = (float) (width * Math.pow(2, zoom - 9));
+		// get ready for drawing
+		glfwSwapBuffers(Gui.window);
+		glClearColor(1f, 1f, 1f, 1f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
+		int width = Gui.width;
+		int height = Gui.height;
+		
+		// the width of a Tile on the canvas
+		float tileWidth = (float) (Math.pow(2, zoom - 9)) * 2;
+		
+		// the width of a Tile on the canvas
+		float tileHeight = tileWidth * width / height;
 		
 		// coordinates of the rectangle of the Map that can be seen on the screen
-		float mapViewWidth = width * 7 / 8f / tileSize;
-		float mapViewHeight = height / tileSize;
-		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2;
+		float mapViewWidth = 7 / 4f / tileWidth; // the decimal number of tiles that fit in on the screen in the horizontal direction
+		float mapViewHeight = 2 / tileHeight; // the decimal number of tiles that fit in on the screen in the vertical direction
+		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2; // the decimal gamemap coordinates of the view of the map
 		float mapViewCornerY = playerY - (mapViewHeight - 1) / 2;
 		
 		// convert the coordinates to ints
@@ -110,7 +123,8 @@ public class Main {
 		// get the Tiles in the rectangle
 		Tile[] tiles = map.getTiles(mapX, mapY, mapWidth + 1, mapHeight + 1);
 		
-		// iterate through all the tiles of the rectangle and paint them
+		
+		// iterate through all the tiles of the rectangle and draw them
 		for (int i = mapY; i <= mapY + mapHeight; i++)
 		{
 			for (int j = mapX; j <= mapX + mapWidth; j++)
@@ -118,32 +132,34 @@ public class Main {
 				Tile currentTile = tiles[(i - mapY) * (mapWidth + 1) + (j - mapX)];
 				
 				// calculate the location where the Tile will be painted
-				int paintX = (int)((j - mapViewCornerX) * tileSize);
-				int paintY = (int)((i - mapViewCornerY) * tileSize);
-				int nextPaintX = (int)((j + 1 - mapViewCornerX) * tileSize);
-				int nextPaintY = (int)((i + 1 - mapViewCornerY) * tileSize);
-				
-				currentTile.paint(g, paintX, paintY, nextPaintX - paintX, nextPaintY - paintY, j, i);
+				float paintX = (j - mapViewCornerX) * tileWidth - 1;
+				float paintY = (i - mapViewCornerY) * tileHeight - 1;
+				float nextPaintX = (j + 1 - mapViewCornerX) * tileWidth - 1;
+				float nextPaintY = (i + 1 - mapViewCornerY) * tileHeight - 1;
+								
+				currentTile.draw(paintX, paintY, nextPaintX, nextPaintY, j, i);
 
 				// draw the player
 				if (j == playerX && i == playerY && !deadScreen)
 				{
-					int drawX = paintX + (nextPaintX - paintX) / 4;
-					int drawY = paintY + (nextPaintY - paintY) / 4;
-					int drawSize = Math.max((nextPaintX - paintX) / 2, (nextPaintY - paintY) / 2);
+					float drawX = paintX + (nextPaintX - paintX) / 4;
+					float drawY = paintY + (nextPaintY - paintY) / 4;
+					float endX = paintX + (nextPaintX - paintX) * 3 / 4;
+					float endY = paintY + (nextPaintY - paintY) * 3 / 4;
+					//float drawSize = Math.max((nextPaintX - paintX) / 2, (nextPaintY - paintY) / 2);
 					
-					PaintUtils.drawSquareTexture(g, drawX, drawY, drawSize, drawSize, "Player.png");
+					PaintUtils.drawTexture(drawX, drawY, endX, endY, "Player");
 					
 					if (hitState != -1)
 					{
 						// draw the transparent red square over the player
-						g.setColor(new Color(255, 0, 0, (int)((1 - hitState) * 255)));
-						g.fillRect(drawX, drawY, drawSize, drawSize);
+						glColor4f(1, 0, 0, 1 - hitState);
+						PaintUtils.drawRectangleP(drawX, drawY, endX, endY);
 					}
 				}
 			}
 		}
-		
+
 		// draw the entities
 		for (int i = 0, n = entities.size(); i < n; i++)
 		{
@@ -152,85 +168,86 @@ public class Main {
 			// if the entity can be seen in the map view
 			if (currentEntity.x + 1 > mapX && currentEntity.y + 1 > mapY && currentEntity.x - 1 < mapX + mapWidth && currentEntity.y - 1 < mapY + mapHeight)
 			{
-				AffineTransform previousTransform = g.getTransform();
+				// create correct transformation matrices for drawing the entity
 				
-				// change graphics's transform to draw the entity correctly
-				g.translate((currentEntity.x - mapViewCornerX) * tileSize, (currentEntity.y - mapViewCornerY) * tileSize);
-				g.rotate(currentEntity.rotation + Math.PI / 2);
-				g.translate(-tileSize / 2, -tileSize / 2);
+				glPushMatrix();
 				
-				currentEntity.draw(g, (int)tileSize);
+				// translate the drawing to the correct place on the screen
+				glTranslatef((currentEntity.x - mapViewCornerX) * tileWidth - 1, (currentEntity.y - mapViewCornerY) * tileHeight - 1, 0);
+				// scale the drawing to make the entity as big as tiles
+				glScalef(tileWidth / 2, tileHeight / 2, 1);
+				// rotate the drawing according to the rotation of the entity
+				glRotatef((float)(currentEntity.rotation * 180 / Math.PI) - 90, 0, 0, 1f);
 				
-				g.setTransform(previousTransform);
+				// draw the entity
+				currentEntity.draw();
+
+				// get the drawing to the previous state 
+				glPopMatrix();
 			}
 		}
 		
 		// draw the dead screen
 		if (deadScreen)
 		{
-			g.setColor(new Color(255, 0, 0, 127));
-			g.fillRect(0, 0, width * 7 / 8, height);
+			glColor4f(1f, 0, 0, 0.5f);
+			// draw red over the map view
+			PaintUtils.drawRectangle(-1, -1, 7 / 4f, 2);
 			
-			g.setColor(Color.black);
-			StringDraw.drawMaxString(g, "You died.", new Rectangle(width * 7 / 32, height / 4, width * 7 / 16, height / 8));
+			// draw the message
+			TextDraw.drawText("You died.", 7 / 16f - 1, -1 / 2f, 7 / 8f, 1 / 4f, TextAlign.MIDDLE, 0);
 		}
 		
 		// draw the health bar
 		
 		// x coordinate of the left end of the health bar
-		int healthXStart = width * 7 / 8;
+		float healthXStart = 7 / 4f - 1;
 		
 		// x coordinate of the right end of the health bar
-		int healthXEnd = width * 15 / 16;
+		float healthXEnd = 15 / 8f - 1;
 		
 		// draw the health background
-		g.setColor(new Color(153, 0, 0));
-		g.fillRect(healthXStart, 0, healthXEnd - healthXStart, height);
+		glColor3f(153 / 255f, 0, 0);
+		PaintUtils.drawRectangle(healthXStart, -1, healthXEnd - healthXStart, 2);
 		
 		// y coordinate of the bottom end of the heart
-		int heartYEnd = healthXEnd - healthXStart;
+		float heartYStart = 1 - (healthXEnd - healthXStart) * width / height;
 		
 		// draw the heart
-		g.drawImage(ResourceHandler.getImage("Heart.png", heartYEnd), healthXStart, 0, null);
+		PaintUtils.drawTexture(healthXStart, heartYStart, healthXEnd, 1, "Heart");
 		
 		// draw the amount of health points
-		g.setColor(Color.red);
-		int healthBarHeight = (height - heartYEnd) * health / Constants.MAX_HEALTH;
-		g.fillRect(healthXStart, height - healthBarHeight, heartYEnd, healthBarHeight);
+		glColor3f(1f, 0, 0);
+		float healthBarHeight = (heartYStart + 1) * health / Constants.MAX_HEALTH;
+		PaintUtils.drawRectangle(healthXStart, -1, healthXEnd - healthXStart, healthBarHeight);
 		
-		// draw the bar to break the amount of health points
-		g.setColor(Color.black);
+		// draw the bars to break the amount of health points
+		glColor3f(0, 0, 0);
 		for (int i = 1; i < Constants.MAX_HEALTH; i++)
 		{
-			g.fillRect(healthXStart, heartYEnd + (height - heartYEnd) * i / Constants.MAX_HEALTH - height / 512, heartYEnd, height / 256);
+			PaintUtils.drawRectangle(healthXStart, -1 + (1 + heartYStart) * i / Constants.MAX_HEALTH - 1 / 512f, healthXEnd - healthXStart, 1 / 256f);
 		}
 		
 		// draw the inventory
 		for (int i = 0; i < 8; i++)
 		{
-			int paintY = height * i / 8;
-			int nextPaintY = height * (i + 1) / 8;
-			inventory[i].draw(g, healthXEnd, paintY, width - healthXEnd, nextPaintY - paintY, selectedItem == i ? new Color(191, 255, 191) : Color.white);
+			float paintY = 1 - i / 4f - 1 / 4f;
+			inventory[i].draw(healthXEnd, paintY, 1, paintY + 1 / 4f, selectedItem == i ? new Color(191, 255, 191) : Color.white);
 		}
 		
 		// draw the boxes
 		for (int i = 0, n = boxes.size(); i < n; i++)
 		{
-			boxes.get(i).draw(g, width, height);
+			boxes.get(i).draw();
 		}
 	}
 	
 	/**
 	 * Handles key releases for the game.
-	 * @param e KeyEvent
+	 * @param code GLFW code of the key
 	 */
-	public static void keyReleased(KeyEvent e)
+	public static void keyReleased(int code)
 	{
-		Dimension windowSize = Gui.getContentSize();
-		int width = windowSize.width;
-		int height = windowSize.height;
-		
-		int code = e.getKeyCode();
 		int numberOfBoxes = boxes.size();
 
 		// copy selectingItem's value, so that the current value can be used throughout this method but the selectingItem variable is false by default
@@ -240,7 +257,7 @@ public class Main {
 		if (deadScreen)
 		{
 			// if the dead screen is shown and the enter key is released
-			if (code == KeyEvent.VK_ENTER)
+			if (code == GLFW_KEY_ENTER)
 			{
 				// hide the dead screen
 				deadScreen = false;
@@ -260,7 +277,7 @@ public class Main {
 		// if at least one Box is opened, trigger its key function or remove it if the key was Escape
 		if (numberOfBoxes != 0)
 		{
-			if (code == KeyEvent.VK_ESCAPE)
+			if (code == GLFW_KEY_ESCAPE)
 			{
 				// remove the Box
 				boxes.remove(numberOfBoxes - 1);
@@ -269,22 +286,20 @@ public class Main {
 			{
 				// pass the event to the Box
 				Box topBox = boxes.get(numberOfBoxes - 1);
-				boxes.get(numberOfBoxes - 1).key(e, () -> boxes.remove(topBox));
+				boxes.get(numberOfBoxes - 1).keyReleased(code, () -> boxes.remove(topBox));
 			}
 			return;
 		}
 		switch (code)
 		{
 			// handle zooming in and out
-			case KeyEvent.VK_ADD:
-			case KeyEvent.VK_PLUS:
+			case GLFW_KEY_KP_ADD:
 				if (zoom != Constants.MAX_ZOOM)
 				{
 					zoom++;
 				}
 				break;
-			case KeyEvent.VK_SUBTRACT:
-			case KeyEvent.VK_MINUS:
+			case GLFW_KEY_KP_SUBTRACT:
 				if (zoom != 0)
 				{
 					zoom--;
@@ -292,15 +307,15 @@ public class Main {
 				break;
 			
 			// handle arrow releases - stop moving
-			case KeyEvent.VK_UP:
-			case KeyEvent.VK_DOWN:
-			case KeyEvent.VK_LEFT:
-			case KeyEvent.VK_RIGHT:
+			case GLFW_KEY_UP:
+			case GLFW_KEY_DOWN:
+			case GLFW_KEY_LEFT:
+			case GLFW_KEY_RIGHT:
 				arrowDown = (code == arrowDown) ? 0 : arrowDown;
 				break;
 			
 			// display the action window
-			case KeyEvent.VK_A:
+			case GLFW_KEY_A:
 				Tile currentTile = map.getTile(playerX, playerY);
 				if (currentTile.hasItems())
 				{
@@ -324,10 +339,10 @@ public class Main {
 							// try adding the item in the inventory, if no items were added, show an InfoBox
 							if (!Main.tryAddInventoryItems(currentStack))
 							{
-								InfoBox box = new InfoBox(7 / 16f, 1 / 2f, "No space in the inventory!");
+								InfoBox box = new InfoBox(-1 / 8f, 0, "No space in the inventory!", CornerAlign.TOPLEFT);
 								
 								// fit the box in the window
-								box.tryFitWindow(width, height);
+								box.tryFitWindow();
 								
 								boxes.add(box);
 							}
@@ -341,10 +356,10 @@ public class Main {
 					
 					// add the OptionBox
 					
-					OptionBox box = new OptionBox(options, actions, 7 / 16f, 1 / 2f, "Grab items");
+					OptionBox box = new OptionBox(options, actions, -1 / 8f, 0, "Grab items", CornerAlign.TOPLEFT);
 					
 					// fit the box in the window
-					box.tryFitWindow(width, height);
+					box.tryFitWindow();
 					
 					boxes.add(box);
 				}
@@ -366,7 +381,7 @@ public class Main {
 					}
 					
 					// create an OptionBox in the middle of the map
-					boxes.add(new OptionBox(options, actions, 7 / 16f, 1 / 2f, topStructure.name));
+					boxes.add(new OptionBox(options, actions, -1 / 8f, 0, topStructure.name, CornerAlign.TOPLEFT));
 				}
 				else if (currentTile.getDepth() < 32)
 				{
@@ -379,17 +394,17 @@ public class Main {
 						currentTile.incrementDepth();
 					}
 					};
-					boxes.add(new OptionBox(new String[] { "Take A Rock" }, actions, 7 / 16f, 1 / 2f, "Rock"));
+					boxes.add(new OptionBox(new String[] { "Take A Rock" }, actions, -1 / 8f, 0, "Rock", CornerAlign.TOPLEFT));
 				}
 				break;
 			// show a Combine Box
-			case KeyEvent.VK_C:
-				CombineBox box = new CombineBox(7 / 16f, 1 / 2f);
-				box.tryFitWindow(width, height);
+			case GLFW_KEY_C:
+				CombineBox box = new CombineBox(-1 / 8f, 0, CornerAlign.TOPLEFT);
+				box.tryFitWindow();
 				boxes.add(box);
 				break;
 			// hit the surrounding entities
-			case KeyEvent.VK_X:
+			case GLFW_KEY_X:
 				Item itemSelected = inventory[selectedItem].getItem();
 				
 				WeaponItem weapon = itemSelected instanceof WeaponItem ? (WeaponItem) itemSelected : null;
@@ -424,23 +439,23 @@ public class Main {
 				}
 				break;
 			// start the selecting of an inventory slot
-			case KeyEvent.VK_S:
+			case GLFW_KEY_S:
 				selectingItem = true;
 				break;
 		}
 		
 		// check if the player wants to see the actions of an inventory slot
-		if ((code >= KeyEvent.VK_1 && code <= KeyEvent.VK_8) || (code >= KeyEvent.VK_NUMPAD1 && code <= KeyEvent.VK_NUMPAD8))
+		if ((code >= GLFW_KEY_1 && code <= GLFW_KEY_8) || (code >= GLFW_KEY_KP_1 && code <= GLFW_KEY_KP_8))
 		{
 			// inventory slot the player chose
 			int slot;
-			if (code >= KeyEvent.VK_1 && code <= KeyEvent.VK_8)
+			if (code >= GLFW_KEY_1 && code <= GLFW_KEY_8)
 			{
-				slot = code - KeyEvent.VK_1;
+				slot = code - GLFW_KEY_1;
 			}
 			else
 			{
-				slot = code - KeyEvent.VK_NUMPAD1;
+				slot = code - GLFW_KEY_KP_1;
 			}
 			
 			// select if currently selecting, else show actions
@@ -450,7 +465,7 @@ public class Main {
 			}
 			else
 			{
-				showItemActions(slot, width, height);
+				showItemActions(slot);
 			}
 		}
 	}
@@ -467,12 +482,10 @@ public class Main {
 	/**
 	 * Shows an OptionBox specific to actions of an Item in a specified inventory slot.
 	 * @param slot number of the slot
-	 * @param width width of the window
-	 * @param height height of the window
 	 */
-	private static void showItemActions(int slot, int width, int height)
+	private static void showItemActions(int slot)
 	{
-		// return if no is there
+		// return if nothing is there
 		if (inventory[slot].getCount() == 0)
 		{
 			return;
@@ -518,17 +531,14 @@ public class Main {
 		
 		actions[actions.length - 1] = () -> {
 			// show an InputBox to ask the user for the amount of Items to drop
-			String request = "Enter the number of items to drop: ";
+			String request = "Number of items: ";
 			
 			// submit by calling the drop function
-			Consumer<String> submitFunction = (inputString) -> { drop(slot, inputString, width, height); };
+			Consumer<String> submitFunction = (inputString) -> { drop(slot, inputString); };
 			
-			// allow only digits
-			Function<Integer, Boolean> charFilter = InputBox.DIGIT_FILTER;
-			
-			InputBox box = new InputBox(31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,
-					request, submitFunction, charFilter);
-			box.tryFitWindow(width, height);
+			InputBox box = new InputBox(15 / 16f, 1 - slot / 4f - 1 / 8f /* coordinates of the center of the slot */,
+					request, submitFunction, InputBox.DIGIT_INTERPRETER, CornerAlign.TOPRIGHT);
+			box.tryFitWindow();
 			boxes.add(box);
 		};
 		
@@ -548,25 +558,24 @@ public class Main {
 		String itemName = item.name;
 		
 		// show the OptionBox
-		OptionBox box = new OptionBox(options, actions, 31 / 32f, 1 / 16f + slot / 8f /* coordinates of the center of the slot */,
-				itemName); 
-		box.tryFitWindow(width, height);
+		OptionBox box = new OptionBox(options, actions, 15 / 16f, 1 - slot / 4f - 1 / 8f /* coordinates of the center of the slot */,
+				itemName, CornerAlign.TOPRIGHT); 
+		box.tryFitWindow();
 		boxes.add(box);
 	}
 	
 	/**
 	 * Handles key types for the game.
-	 * @param e KeyEvent
+	 * @param code key code of the pressed key
 	 */
-	public static void keyPressed(KeyEvent e)
+	public static void keyPressed(int code)
 	{
 		// don't allow anything while the dead screen is shown
 		if (deadScreen)
 		{
 			return;
 		}
-		int code = e.getKeyCode();
-		if (arrowDown == 0 && (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN || code == KeyEvent.VK_LEFT || code == KeyEvent.VK_RIGHT))
+		if (arrowDown == 0 && (code == GLFW_KEY_UP || code == GLFW_KEY_DOWN || code == GLFW_KEY_LEFT || code == GLFW_KEY_RIGHT))
 		{
 			arrowDown = code;
 			downAt = System.currentTimeMillis();
@@ -579,7 +588,7 @@ public class Main {
 	 * Tries to add Items into the inventory.
 	 * Decreases the count in the passed stack according to the amount of items add into the inventory.
 	 * @param items items to add.
-	 * @return true if successfully add at least some items into the inventory, else false
+	 * @return true if successfully added at least some items into the inventory, else false
 	 */
 	public static boolean tryAddInventoryItems(ItemStack items)
 	{
@@ -669,16 +678,16 @@ public class Main {
 		// move the player according to the key that is pressed
 		switch (arrowDown)
 		{
-			case KeyEvent.VK_UP:
-				playerY--;
-				break;
-			case KeyEvent.VK_DOWN:
+			case GLFW_KEY_UP:
 				playerY++;
 				break;
-			case KeyEvent.VK_LEFT:
+			case GLFW_KEY_DOWN:
+				playerY--;
+				break;
+			case GLFW_KEY_LEFT:
 				playerX--;
 				break;
-			case KeyEvent.VK_RIGHT:
+			case GLFW_KEY_RIGHT:
 				playerX++;
 				break;
 		}
@@ -686,13 +695,12 @@ public class Main {
 	
 	/**
 	 * Handles mouse clicks for the game.
-	 * @param event MouseEvent
+	 * @param location the cursor position relative to the content pane at the moment of the click
 	 */
-	public static void mouseClicked(MouseEvent event)
+	public static void mouseClicked(Point location)
 	{
-		Dimension windowSize = Gui.getContentSize();
-		int width = windowSize.width;
-		int height = windowSize.height;
+		int width = Gui.width;
+		int height = Gui.height;
 		
 		// the number of Boxes
 		int numberOfBoxes = boxes.size();
@@ -705,7 +713,7 @@ public class Main {
 			Runnable closeAction = () -> boxes.remove(topBox);
 			
 			// if the top box was not clicked, remove it
-			if (!topBox.mouseClicked(event, closeAction, width, height))
+			if (!topBox.mouseClicked(location, closeAction))
 			{
 				closeAction.run();
 			}
@@ -713,13 +721,13 @@ public class Main {
 		else
 		{
 			// if the player click on the inventory
-			if (event.getX() >= width * 15 / 16)
+			if (location.x >= width * 15 / 16)
 			{
 				// number of the slot clicked
-				int slotClicked = event.getY() / (height / 8);
+				int slotClicked = location.y / (height / 8);
 
 				// show actions
-				showItemActions(slotClicked, width, height);
+				showItemActions(slotClicked);
 			}
 		}
 	}
@@ -729,10 +737,8 @@ public class Main {
 	 * Used primarily to accept player's drop submissions.
 	 * @param slotNumber number of the slot to drop from
 	 * @param numberOfItems text representation of the number of Items to drop
-	 * @param width width of the window
-	 * @param height height of the window
 	 */
-	private static void drop(int slotNumber, String numberOfItems, int width, int height)
+	private static void drop(int slotNumber, String numberOfItems)
 	{
 		// error to display to the user, remains null if no error occurs
 		String errorMessage = null;
@@ -786,8 +792,8 @@ public class Main {
 		}
 		
 		// show an InfoBox with the error message
-		InfoBox box = new InfoBox(31 / 32f, 1 / 16f + slotNumber / 8f, errorMessage);
-		box.tryFitWindow(width, height);
+		InfoBox box = new InfoBox(15 / 16f, 1 - slotNumber / 4f - 1 / 8f, errorMessage, CornerAlign.TOPRIGHT);
+		box.tryFitWindow();
 		boxes.add(box);
 	}
 	
@@ -871,12 +877,12 @@ public class Main {
 		// the player hasn't entered anything
 		if (inputLength == 0)
 		{
-			errorMessage = "You must enter a number.";
+			errorMessage = "Enter a number.";
 		}
 		// the player has entered more than 3 digit number, they certainly doesn't have enough Items for that
 		else if (inputLength > 3)
 		{
-			errorMessage = "You don't have enough items.";
+			errorMessage = "Not enough items.";
 		}
 		else
 		{
@@ -904,7 +910,7 @@ public class Main {
 				// set an error message if there is not enough items
 				if (itemsRequired > itemsAvailable)
 				{
-					errorMessage = "You need " + String.valueOf(itemsRequired) + " " + currentItem.name + " items and you have only " + String.valueOf(itemsAvailable) + ".";
+					errorMessage = "Need " + String.valueOf(itemsRequired) + " " + currentItem.name + " items. (have " + String.valueOf(itemsAvailable) + ")";
 					break;
 				}
 			}
@@ -958,9 +964,8 @@ public class Main {
 		}
 		
 		// show the error message
-		InfoBox box = new InfoBox(7 / 16f, 1 / 2f, errorMessage);
-		Dimension windowSize = Gui.getContentSize();
-		box.tryFitWindow(windowSize.width, windowSize.height);
+		InfoBox box = new InfoBox(-1 / 8f, 0, errorMessage, CornerAlign.TOPLEFT);
+		box.tryFitWindow();
 		
 		boxes.add(box);
 	}
@@ -977,21 +982,19 @@ public class Main {
 	}
 	
 	/**
-	 * Updates the state of the game. Should prepare data for the paint method.
-	 * @param width width of the window
-	 * @param height height of the window
+	 * Updates the state of the game. Should prepare data for the render method.
 	 * @param delta time spent since the last update in milliseconds
 	 */
-	public static void update(int width, int height, int delta)
+	public static void update(int delta)
 	{
 		long currentTime = System.currentTimeMillis();
 		
 		// the size of a Tile on the screen
-		float tileSize = (float) (width * Math.pow(2, zoom - 9));
+		float tileSize = (float) (Gui.width * Math.pow(2, zoom - 9));
 		
 		// calculate the coordinates of the rectangle of the Map that can be seen on the screen
-		float mapViewWidth = width * 7 / 8f / tileSize;
-		float mapViewHeight = height / tileSize;
+		float mapViewWidth = Gui.width * 7 / 8f / tileSize;
+		float mapViewHeight = Gui.height / tileSize;
 		float mapViewCornerX = playerX - (mapViewWidth - 1) / 2;
 		float mapViewCornerY = playerY - (mapViewHeight - 1) / 2;
 		
@@ -1005,7 +1008,7 @@ public class Main {
 			lastMove = currentTime;
 		}
 		
-		// update all Tile in the update radius
+		// update all Tiles in the update radius
 		map.updateTiles(playerX - Constants.UPDATE_RADIUS, playerY - Constants.UPDATE_RADIUS, Constants.UPDATE_RADIUS * 2, Constants.UPDATE_RADIUS * 2, delta);
 		
 		// update entities
@@ -1077,5 +1080,72 @@ public class Main {
 		
 		// initialize user interface
 		Gui.initializeGui();
+	}
+	
+	/**
+	 * Calls the update and render methods repeatedly with the correct timing until Main.running is set to false.
+	 * @throws InterruptedException
+	 */
+	public static void gameLoop() throws InterruptedException
+	{
+		// thread that takes the input from the console (see the Console class)
+		Thread consoleThread = new Thread(() -> {
+			try {
+				Console.operateConsole();
+			} catch (IOException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+		
+		// start the console thread
+		consoleThread.start();
+		
+		// time taken by the last run through the loop (to be passed to the update method)
+		long lastDifference = 0;
+		// start time of the current run through the loop
+		long startTime = System.nanoTime();
+		
+		// the game loop
+		while (running)
+		{
+			// poll the GLFW event
+			glfwPollEvents();
+			
+			// call the update method
+			update((int)lastDifference / 1000000);
+			
+			// call the render method
+			render();
+			
+			// if the object isn't locked, perform all the user admin actions
+			synchronized (Console.adminActions)
+			{
+				while (Console.adminActions.size() != 0)
+				{
+					Console.adminActions.get(0).run();
+					Console.adminActions.remove(0);
+				}
+			}
+			
+			// wait the remaining time, if needed
+			long endTime = System.nanoTime();
+			long toWait = 1000000000 / Constants.TARGET_FPS - (endTime - startTime);
+			if (toWait > 0)
+			{
+				Thread.sleep(toWait / 1000000, (int)(toWait % 1000000));
+			}
+			endTime = System.nanoTime();
+			lastDifference = endTime - startTime;
+			startTime = endTime;
+			
+			// if the window should close, set running to false
+			if (glfwWindowShouldClose(Gui.window))
+			{
+				running = false;
+			}
+		}
+		
+		// wait for the console thread to end (it should, since running has been set to false)
+		consoleThread.join();
 	}
 }

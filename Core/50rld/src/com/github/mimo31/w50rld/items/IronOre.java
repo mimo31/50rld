@@ -12,7 +12,7 @@ import com.github.mimo31.w50rld.ObjectsIndex;
 public class IronOre extends SimplyDrawnItem implements Meltable {
 
 	public IronOre() {
-		super("Iron Ore", "IronOreI.png");
+		super("Iron Ore", "IronOreI");
 	}
 
 	@Override

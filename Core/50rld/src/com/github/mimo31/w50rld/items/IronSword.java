@@ -10,7 +10,7 @@ import com.github.mimo31.w50rld.WeaponItem;
 public class IronSword extends SimplyDrawnItem implements WeaponItem {
 
 	public IronSword() {
-		super("Iron Sword", "IronSword.png");
+		super("Iron Sword", "IronSword");
 	}
 
 	@Override

@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.entities;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.Entity;
 import com.github.mimo31.w50rld.EntityData;
 import com.github.mimo31.w50rld.Item;
@@ -38,10 +36,10 @@ public class Ant extends Entity {
 		}
 
 		@Override
-		protected void drawSub(Graphics2D g, int width) {
+		protected void drawSub() {
 			// draw the moving texture it is moving and the time modulo 150 is less the 75 to swap the textures every 75 milliseconds
-			String textureName = super.moving && System.currentTimeMillis() % 150 < 75 ? "AntMov.png" : "Ant.png";
-			PaintUtils.drawSquareTexture(g, 0, 0, width, width, textureName);
+			String textureName = super.moving && System.currentTimeMillis() % 150 < 75 ? "AntMov" : "Ant";
+			PaintUtils.drawTextureNSetCol(-1, -1, 1, 1, textureName);
 		}
 	}
 }

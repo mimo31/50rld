@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.items;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.Item;
 import com.github.mimo31.w50rld.PaintUtils;
 
@@ -27,9 +25,9 @@ public class SimplyDrawnItem extends Item {
 	}
 
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height)
+	public void draw(float startx, float starty, float endx, float endy)
 	{
-		PaintUtils.drawSquareTexture(g, x, y, width, height, this.textureName);
+		PaintUtils.drawTexture(startx, starty, endx, endy, this.textureName);
 	}
 	
 }

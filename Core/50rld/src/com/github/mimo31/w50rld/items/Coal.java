@@ -10,7 +10,7 @@ import com.github.mimo31.w50rld.FuelItem;
 public class Coal extends SimplyDrawnItem implements FuelItem {
 
 	public Coal() {
-		super("Coal", "CoalI.png");
+		super("Coal", "CoalI");
 	}
 
 	@Override

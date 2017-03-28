@@ -8,7 +8,7 @@ package com.github.mimo31.w50rld.items;
 public class FurnaceWall extends SimplyDrawnItem {
 
 	public FurnaceWall() {
-		super("Furnace Wall", "FurnaceWall.png");
+		super("Furnace Wall", "FurnaceWall");
 	}
 
 }

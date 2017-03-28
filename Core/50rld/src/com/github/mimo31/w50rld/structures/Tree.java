@@ -1,7 +1,5 @@
 package com.github.mimo31.w50rld.structures;
 
-import java.awt.Graphics2D;
-
 import com.github.mimo31.w50rld.ItemStack;
 import com.github.mimo31.w50rld.Main;
 import com.github.mimo31.w50rld.ObjectsIndex;
@@ -48,7 +46,7 @@ public class Tree extends Structure implements Plant {
 	}
 	
 	@Override
-	public void draw(Graphics2D g, int x, int y, int width, int height, int tileX, int tileY, int structureNumber)
+	public void draw(float startx, float starty, float endx, float endy, int tileX, int tileY, int structureNumber)
 	{
 		// decide whether to draw the not grown texture or the normal texture
 		String textureName;
@@ -56,13 +54,13 @@ public class Tree extends Structure implements Plant {
 		StructureData structure = tile.getStructure(structureNumber);
 		if (((TreeData) structure).grown)
 		{
-			textureName = "Tree.png";
+			textureName = "Tree";
 		}
 		else
 		{
-			textureName = "TreeNotGrown.png";
+			textureName = "TreeNotGrown";
 		}
-		PaintUtils.drawSquareTexture(g, x, y, width, height, textureName);
+		PaintUtils.drawTexture(startx, starty, endx, endy, textureName);
 	}
 	
 	@Override

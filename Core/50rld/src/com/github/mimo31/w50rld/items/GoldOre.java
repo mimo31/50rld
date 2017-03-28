@@ -12,7 +12,7 @@ import com.github.mimo31.w50rld.ObjectsIndex;
 public class GoldOre extends SimplyDrawnItem implements Meltable {
 
 	public GoldOre() {
-		super("Gold Ore", "GoldOreI.png");
+		super("Gold Ore", "GoldOreI");
 	}
 
 	@Override

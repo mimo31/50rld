@@ -1,13 +1,11 @@
 package com.github.mimo31.w50rld;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
-import com.github.mimo31.w50rld.StringDraw.TextAlign;
+import com.github.mimo31.w50rld.TextDraw.TextAlign;
 
 /**
  * Represents a Box with the UI of a Chest.
@@ -26,81 +24,79 @@ public class ChestUIBox extends Box {
 	private int rowSelected = -1;
 	
 	
-	public ChestUIBox(float x, float y, ItemStack[] items) {
+	public ChestUIBox(float x, float y, ItemStack[] items, CornerAlign align) {
 		super(x, y);
 		this.items = items;
+		super.align(align);
 	}
 
 	@Override
-	public void draw(Graphics2D g, int width, int height) {
-		int locX = (int) (super.x * width);
-		int locY = (int) (super.y * height);
+	public void draw() {
+		float contentWidth = (/* 4 Item slots */4 + /* two borders on the sides */2 * (1 / 2f) + /* 3 spaces between the slots */3 * (1 / 4f)) * Constants.BOX_TILE_SIZE;
 		
-		int borderSize = width / 6 / 64;
+		float boxWidth = 2 * Constants.BOX_BORDER_SIZE + contentWidth;
 		
-		int gridSize = width / 36;
-	
-		int contentWidth = /* 4 Item slots */gridSize * 4 + /* to border on the sides */gridSize / 2 * 2 + /* 3 spaces between the slots */gridSize / 4 * 3;
-		int contentHeight = contentWidth + gridSize; // the width plus the height of the headline
+		float tileHeight = Constants.BOX_TILE_SIZE * Gui.width / Gui.height;
+		
+		float contentHeight = (contentWidth / Constants.BOX_TILE_SIZE + 1) * tileHeight;
+		
+		float borderHeight = Constants.BOX_BORDER_SIZE * Gui.width / Gui.height;
+		
+		float boxHeight = 2 * borderHeight + contentHeight;
 		
 		// fill the Box's borders
-		g.setColor(Color.magenta);
-		g.fillRect(locX, locY, contentWidth + 2 * borderSize, contentHeight + 2 * borderSize);
+		PaintUtils.setDrawColor(Color.magenta);
+		PaintUtils.drawRectangle(this.x, this.y, boxWidth, boxHeight);
 		
-		int contentX = locX + borderSize;
-		int contentY = locY + borderSize;
+		float contentX = this.x + Constants.BOX_BORDER_SIZE;
+		float contentY = this.y + borderHeight;
 		
-		// bounds of the headline
-		Rectangle headlineBounds = new Rectangle(contentX, contentY, contentWidth, gridSize);
+		PaintUtils.setDrawColor(Color.orange);
+		PaintUtils.drawRectangle(contentX, contentY + contentHeight - tileHeight, contentWidth, tileHeight);
 		
-		g.setColor(Color.orange);
-		g.fill(headlineBounds);
-		
-		g.setColor(Color.black);
-		StringDraw.drawMaxString(g, borderSize * 2, "Chest", TextAlign.LEFT, headlineBounds);
+		TextDraw.drawText("Chest", contentX, contentY + contentHeight - tileHeight, contentWidth, tileHeight, TextAlign.LEFT, Constants.BOX_BORDER_SIZE);
 		
 		// draw the background gray if selecting from the inventory, white otherwise
-		g.setColor(this.selectingFromInventory ? Color.lightGray : Color.white);
-		g.fillRect(contentX, contentY + gridSize, contentWidth, contentWidth);
+		PaintUtils.setDrawColor(this.selectingFromInventory ? Color.lightGray : Color.white);
+		PaintUtils.drawRectangle(contentX, contentY, contentWidth, contentHeight - tileHeight);
 		
 		// draw the Item slots
 		for (int i = 0; i < 4; i++)
 		{
 			Color borderColor = this.rowSelected == i ? Color.red : Color.black;
 			// y coordinate of the slots in this row
-			int drawY = contentY + gridSize + gridSize / 2 + (gridSize / 4 + gridSize) * i;
+			float drawY = contentY + tileHeight / 2 + (3 - i) * tileHeight * 1.25f;
 			for (int j = 0; j < 4; j++)
 			{
 				ItemStack currentStack = this.items[j + i * 4];
-				int drawX = contentX + gridSize / 2 + (gridSize / 4 + gridSize) * j;
-				ItemStack.drawWithBorder(g, drawX, drawY, gridSize, gridSize, borderColor, currentStack);
+				float drawX = contentX + Constants.BOX_TILE_SIZE * 0.5f + 1.25f * j * Constants.BOX_TILE_SIZE;
+				ItemStack.drawWithBorder(drawX, drawY, drawX + Constants.BOX_TILE_SIZE, drawY + tileHeight, borderColor, currentStack);
 			}
 		}
 	}
-
+	
 	@Override
-	protected Dimension getSize(int width, int height) {
-		int borderSize = width / 6 / 64;
-		
-		int gridSize = width / 36;
-		
-		int contentWidth = gridSize * 4 + gridSize / 2 * 2 + gridSize / 4 * 3;
-		int contentHeight = contentWidth + gridSize;
-		
-		return new Dimension(contentWidth + 2 * borderSize, contentHeight + 2 * borderSize);
+	protected float getWidth()
+	{
+		return 2 * Constants.BOX_BORDER_SIZE + (4 + 2 * (1 / 2f) + 3 * (1 / 4f)) * Constants.BOX_TILE_SIZE;
+	}
+	
+	@Override
+	protected float getHeight()
+	{
+		return (2 * Constants.BOX_BORDER_SIZE + (4 + 2 * (1 / 2f) + 3 * (1 / 4f) + 1) * Constants.BOX_TILE_SIZE) * Gui.width / Gui.height;
 	}
 
 	@Override
-	public void key(KeyEvent event, Runnable closeAction)
+	public void keyReleased(int keyCode, Runnable closeAction)
 	{
-		int keyCode = event.getKeyCode();
 		if (this.selectingFromInventory)
 		{
 			// if the player is selecting from the inventory and pressed a valid number from 1 to 8
-			if ((keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_8) || (keyCode >= KeyEvent.VK_NUMPAD1 && keyCode <= KeyEvent.VK_NUMPAD8))
+			if ((keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_8) || (keyCode >= GLFW_KEY_KP_1 && keyCode <= GLFW_KEY_KP_8))
 			{
 				// the number of the inventory slot the player has selected
-				int slotSelected = (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_8) ? keyCode - KeyEvent.VK_1 : keyCode - KeyEvent.VK_NUMPAD1;
+				int slotSelected = (keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_8) ? keyCode - GLFW_KEY_1 : keyCode - GLFW_KEY_KP_1;
 				
 				// the Item the player wants to move to the Chest
 				Item item = Main.getInventorySlot(slotSelected).getItem();
@@ -119,7 +115,7 @@ public class ChestUIBox extends Box {
 				};
 				
 				// ask the player how many items they want to move
-				InputBox box = new InputBox(7 / 16f, 1 / 2f, "How many items would you like to move to the chest?", submitFunction, InputBox.DIGIT_FILTER);
+				InputBox box = new InputBox(-1 / 8f, 0, "How many items to move?", submitFunction, InputBox.DIGIT_INTERPRETER, CornerAlign.TOPLEFT);
 			
 				Main.addBox(box);
 			
@@ -127,7 +123,7 @@ public class ChestUIBox extends Box {
 			}
 			
 			// if the player is selecting from the inventory and pressed the back space, then stop selecting from the inventory
-			else if (keyCode == KeyEvent.VK_BACK_SPACE)
+			else if (keyCode == GLFW_KEY_BACKSPACE)
 			{
 				this.selectingFromInventory = false;
 			}
@@ -135,17 +131,17 @@ public class ChestUIBox extends Box {
 		else
 		{
 			// if the player pressed the I key, stop start selecting from the inventory
-			if (keyCode == KeyEvent.VK_I)
+			if (keyCode == GLFW_KEY_I)
 			{
 				this.selectingFromInventory = true;
 				this.rowSelected = -1;
 				return;
 			}
 			// the player pressed a number from 1 to 4
-			if ((keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_4) || (keyCode >= KeyEvent.VK_NUMPAD1 && keyCode <= KeyEvent.VK_NUMPAD4))
+			if ((keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_4) || (keyCode >= GLFW_KEY_KP_1 && keyCode <= GLFW_KEY_KP_4))
 			{
 				// the number the player pressed
-				int slotSelected = (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_4) ? keyCode - KeyEvent.VK_1 : keyCode - KeyEvent.VK_NUMPAD1;
+				int slotSelected = (keyCode >= GLFW_KEY_1 && keyCode <= GLFW_KEY_4) ? keyCode - GLFW_KEY_1 : keyCode - GLFW_KEY_KP_1;
 				
 				// if they haven't a row selected make the corresponding one so
 				if (this.rowSelected == -1)
@@ -170,7 +166,7 @@ public class ChestUIBox extends Box {
 					};
 					
 					// ask the player how many items do they want to move
-					InputBox box = new InputBox(7 / 16f, 1 / 2f, "How many items would you like to move to the inventory?", submitFunction, InputBox.DIGIT_FILTER);
+					InputBox box = new InputBox(-1 / 8f, 0, "How many items to move?", submitFunction, InputBox.DIGIT_INTERPRETER, CornerAlign.TOPLEFT);
 					Main.addBox(box);
 					this.rowSelected = -1;
 				}
